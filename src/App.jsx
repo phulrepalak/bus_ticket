@@ -1,17 +1,16 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 // Components
 import Navbar from "./components/Navbar";
 
 // Pages
-  import Home from "./pages/Home";
-// import Search from "./pages/Search";
-// import MyBookings from "./pages/MyBookings";
-// import Overview from "./pages/Overview";
-// import Profile from "./pages/Profile";
-// import Login from "./pages/Login";
-// import TrackBooking from "./pages/TrackBooking";
+import Home from "./pages/Home";
+import LoginPage from "./pages/LoginPage";
+import OTPPage from "./pages/OTPPage";
+import SearchResults from "./pages/SearchResults";
+import AccountCreated from "./pages/AccountCreated";
+import CompleteProfile from "./pages/CompleteProfile";
 
 function App() {
   return (
@@ -19,13 +18,24 @@ function App() {
       <Navbar />
 
       <Routes>
+        {/* 1. Default Page ab Home khulega */}
         <Route path="/" element={<Home />} />
-        {/* <Route path="/search" element={<Search />} />
-        <Route path="/bookings" element={<MyBookings />} />
-        <Route path="/overview" element={<Overview />} /> 
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/track-booking" element={<TrackBooking />} /> */}
+        
+        {/* 2. Login Page ab /login path par chalagaya hai */}
+        <Route path="/login" element={<LoginPage />} />
+        
+        <Route path="/otp" element={<OTPPage />} />
+        
+        {/* /home ko bhi rehne dete hain redirection ke liye */}
+        <Route path="/home" element={<Home />} />
+        
+        <Route path="/search" element={<SearchResults />} />
+
+        <Route path="/account-created" element={<AccountCreated />} />
+        <Route path="/profile" element={<CompleteProfile />} />
+
+        {/* 3. Galat URL par seedha Home par bhej dega */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
