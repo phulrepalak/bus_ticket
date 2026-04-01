@@ -5,7 +5,7 @@ import connectDB from "./config/db.js";
 
 // Routes Imports
 import authRoutes from "./routes/authRoutes.js";
-//import busRoutes from "./routes/busRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";  // Import check karein
 
 // Load Environment Variables
 dotenv.config();
@@ -17,22 +17,21 @@ const app = express();
 
 // --- MIDDLEWARES ---
 
-// CORS allow karna zaroori hai taaki React app (port 5173/3000) backend se baat kar sake
 app.use(cors({
-  origin: "http://localhost:5173", // Apne Vite/React ka URL yahan check karein
+  origin: "http://localhost:5173", 
   credentials: true
 }));
 
-// Body Parser taaki req.body read ho sake
+// Body Parser zaroori hai admin data read karne ke liye
 app.use(express.json());
 
 // --- ROUTES REGISTER ---
 
+// Admin panel (Bus/City management) ke liye
+app.use("/api/admin", adminRoutes); 
+
 // Login, OTP, aur Profile functionality ke liye
 app.use("/api/auth", authRoutes);
-
-// Bus search aur filtering ke liye
-//app.use("/api/bus", busRoutes);
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;

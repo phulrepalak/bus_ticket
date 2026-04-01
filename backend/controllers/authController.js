@@ -17,13 +17,17 @@ export const sendOTP = async (req, res) => {
 
     let user = await User.findOne({ phone });
     if (!user) {
-      user = new User({ phone, isProfileComplete: false });
+      // Naya user create karte waqt default role 'user' ensure karein
+      user = new User({ 
+        phone, 
+        isProfileComplete: false, 
+        role: "user" 
+      });
     }
     
     user.otp = otp;
     await user.save();
 
-    // SMS Bhejna (Only to Verified Numbers in Trial)
     await client.messages.create({
       body: `Your GoBus OTP is: ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
@@ -35,11 +39,11 @@ export const sendOTP = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Twilio Error:", err.message);
-    res.status(500).json({ error: "Twilio Error: Check if number is verified or Geo-permissions are on." });
+    res.status(500).json({ error: "Twilio Error: Please check your credentials." });
   }
 };
 
-// 2. Verify OTP
+// 2. Verify OTP (Robust Role Handling)
 export const verifyOTP = async (req, res) => {
   const { phone, otp } = req.body;
   try {
@@ -49,13 +53,26 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
+    // OTP ko verify hone ke baad null karein
     user.otp = null; 
     await user.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    // Fallback logic: Agar galti se role undefined ho toh "user" maanein
+    const userRole = user.role || "user";
+
+    // JWT Token generate karein
+    const token = jwt.sign(
+      { id: user._id, role: userRole }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "7d" }
+    );
+
+    // Response bhejte waqt console mein check karein (Debugging)
+    console.log(`User Logged In: ${phone}, Role: ${userRole}`);
 
     res.status(200).json({
       token,
+      role: userRole, 
       isProfileComplete: user.isProfileComplete,
       message: "Login successful!"
     });
