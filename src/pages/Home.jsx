@@ -1,26 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import heroImg from "../assets/hero.png";
 
 const Home = () => {
   const navigate = useNavigate();
-
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("");
+  const [cities, setCities] = useState([]); // Database cities
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+
+  // Cities fetch karne ka logic
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/admin/cities");
+        const data = await response.json();
+        setCities(data);
+      } catch (error) {
+        console.error("Cities fetch error:", error);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  // Suggestions filter logic for 'From'
+  const handleFromChange = (value) => {
+    setFrom(value);
+    if (value.trim().length > 0) {
+      const filtered = cities.filter((city) =>
+        city.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFromSuggestions(filtered);
+    } else {
+      setFromSuggestions([]);
+    }
+  };
+
+  // Suggestions filter logic for 'To'
+  const handleToChange = (value) => {
+    setTo(value);
+    if (value.trim().length > 0) {
+      const filtered = cities.filter((city) =>
+        city.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setToSuggestions(filtered);
+    } else {
+      setToSuggestions([]);
+    }
+  };
 
   const handleSearch = () => {
     if (!from || !to || !date) {
       alert("Please fill all fields");
       return;
     }
-
-    navigate(`/search?from=${from}&to=${to}&date=${date}`);
+    navigate(`/search`, { state: { from, to, date } });
   };
 
   return (
     <div>
-      {/* HERO */}
+      {/* HERO SECTION */}
       <div
         className="h-[95vh] bg-cover bg-center flex items-center justify-center text-white relative"
         style={{ backgroundImage: `url(${heroImg})` }}
@@ -30,108 +71,73 @@ const Home = () => {
           <h1 className="text-4xl md:text-6xl font-bold">
             Book Your <span className="text-orange-400">Bus</span> Easily
           </h1>
-          <p className="mt-4 text-gray-200">Fast • Safe • Comfortable Travel</p>
-          {/* SEARCH BAR */}{" "}
+          
+          {/* SEARCH BAR */}
           <div className="mt-12 flex justify-center w-full">
             <div className="bg-white rounded-2xl shadow-2xl px-4 py-4 md:px-6 md:py-5 w-[95%] md:w-[80%] lg:w-[65%] flex flex-col md:flex-row items-center gap-4">
-              {" "}
-              {/* FROM */}{" "}
-              <div className="flex items-center gap-3 w-full md:w-1/4 border-b md:border-b-0 md:border-r pb-3 md:pb-0 md:pr-4">
-                {" "}
-                <span className="text-blue-500 text-xl"></span>{" "}
-                <div className="w-full">
-                  {" "}
-                  <p className="text-xs text-gray-400 font-semibold">
-                    FROM
-                  </p>{" "}
-                  <input
-                    type="text"
-                    placeholder="Enter city"
-                    className="w-full outline-none text-gray-800 font-semibold placeholder-gray-400"
-                  />{" "}
-                </div>{" "}
-              </div>{" "}
-              {/* TO */}{" "}
-              <div className="flex items-center gap-3 w-full md:w-1/4 border-b md:border-b-0 md:border-r pb-3 md:pb-0 md:px-4">
-                {" "}
-                <span className="text-blue-500 text-xl"></span>{" "}
-                <div className="w-full">
-                  {" "}
-                  <p className="text-xs text-gray-400 font-semibold">TO</p>{" "}
-                  <input
-                    type="text"
-                    placeholder="Enter destination"
-                    className="w-full outline-none text-gray-800 font-semibold placeholder-gray-400"
-                  />{" "}
-                </div>{" "}
-              </div>{" "}
-              {/* DATE */}{" "}
-              <div className="flex items-center gap-3 w-full md:w-1/4 border-b md:border-b-0 md:border-r pb-3 md:pb-0 md:px-4">
-                {" "}
-                <span className="text-blue-500 text-xl"></span>{" "}
-                <div className="w-full">
-                  {" "}
-                  <p className="text-xs text-gray-400 font-semibold">
-                    DATE
-                  </p>{" "}
-                  <input
-                    type="date"
-                    className="w-full outline-none text-gray-800 font-semibold"
-                  />{" "}
-                </div>{" "}
-              </div>{" "}
-              {/* BUTTON */}{" "}
-              <div className="w-full md:w-auto">
-                {" "}
-                <button className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-semibold transition duration-300">
-                  {" "}
-                   Search{" "}
-                </button>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
-      {/* FEATURES SECTION */}{" "}
-      <div className="bg-gray-100 py-14 px-6">
-        {" "}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {" "}
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
-            {" "}
-            <h3 className="font-semibold text-lg">2000+ Bus Operators</h3>{" "}
-            <p className="text-gray-600 mt-2 text-sm">
-              {" "}
-              The largest network of trusted logistics partners across the
-              nation.{" "}
-            </p>{" "}
-          </div>{" "}
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
-            {" "}
-            <h3 className="font-semibold text-lg">
-              {" "}
-              Verified Seats & Operators{" "}
-            </h3>{" "}
-            <p className="text-gray-600 mt-2 text-sm">
-              {" "}
-              Each journey is vetted for safety, cleanliness, and
-              punctuality.{" "}
-            </p>{" "}
-          </div>{" "}
-          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition duration-300">
-            {" "}
-            <h3 className="font-semibold text-lg">
-              {" "}
-              Best Price Guaranteed{" "}
-            </h3>{" "}
-            <p className="text-gray-600 mt-2 text-sm">
-              {" "}
-              Direct deals that ensure you never overpay for your seat.{" "}
-            </p>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
+              
+              {/* FROM INPUT */}
+              <div className="w-full md:w-1/4 text-left px-2">
+                <p className="text-xs text-gray-400 font-bold uppercase">From</p>
+                <input
+                  list="from-list"
+                  type="text"
+                  placeholder="Enter city"
+                  value={from}
+                  onChange={(e) => handleFromChange(e.target.value)}
+                  className="w-full outline-none text-gray-800 font-semibold"
+                  autoComplete="off"
+                />
+                <datalist id="from-list">
+                  {fromSuggestions.map((city) => (
+                    <option key={city._id} value={city.name} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* TO INPUT */}
+              <div className="w-full md:w-1/4 text-left px-2 border-l border-gray-200">
+                <p className="text-xs text-gray-400 font-bold uppercase">To</p>
+                <input
+                  list="to-list"
+                  type="text"
+                  placeholder="Destination"
+                  value={to}
+                  onChange={(e) => handleToChange(e.target.value)}
+                  className="w-full outline-none text-gray-800 font-semibold"
+                  autoComplete="off"
+                />
+                <datalist id="to-list">
+                  {toSuggestions.map((city) => (
+                    <option key={city._id} value={city.name} />
+                  ))}
+                </datalist>
+              </div>
+
+              {/* DATE */}
+              <div className="w-full md:w-1/4 text-left px-2 border-l border-gray-200">
+                <p className="text-xs text-gray-400 font-bold uppercase">Date</p>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full outline-none text-gray-800 font-semibold"
+                />
+              </div>
+
+              {/* UPDATED BUTTON */}
+              <button 
+                onClick={handleSearch}
+                className="bg-orange-500 hover:bg-orange-600 active:rounded-full text-white px-10 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+
 export default Home;

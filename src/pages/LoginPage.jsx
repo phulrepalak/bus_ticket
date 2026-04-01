@@ -42,7 +42,7 @@ export default function LoginPage() {
              <span className="p-3 border rounded-lg bg-gray-50 text-gray-600">+91</span>
              <input
                 type="text"
-                placeholder="98765 43210"
+                placeholder="Enter your phone number"
                 value={input}
                 onChange={(e) => setInput(e.target.value.replace(/\D/g, ""))}
                 maxLength={10}
