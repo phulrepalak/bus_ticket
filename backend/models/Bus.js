@@ -8,7 +8,21 @@ const busSchema = new mongoose.Schema({
   busNumber: { 
     type: String, 
     required: true, 
-    unique: true // Ek bus number se do entry nahi ho sakti
+    unique: true 
+  },
+  // Naya Field: AC ya Non-AC
+  comfortType: {
+    type: String,
+    required: true,
+    enum: ["AC", "Non-AC"],
+    default: "Non-AC"
+  },
+  // Naya Field: Sleeper ya Seater
+  seatType: {
+    type: String,
+    required: true,
+    enum: ["Sleeper", "Seater", "Semi-Sleeper"],
+    default: "Seater"
   },
   source: { 
     type: String, 
