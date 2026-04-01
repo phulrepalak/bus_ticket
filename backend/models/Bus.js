@@ -8,7 +8,7 @@ const busSchema = new mongoose.Schema({
   busNumber: { 
     type: String, 
     required: true, 
-    unique: true // Ek bus number se do entry nahi ho sakti
+    unique: true // Ek bus number se do entries nahi ho sakti
   },
   source: { 
     type: String, 
@@ -30,16 +30,22 @@ const busSchema = new mongoose.Schema({
     type: Number, 
     required: true 
   },
+  // Naya Field: Weekly Schedule ke liye
+  availableDays: {
+    type: [String], // ["Mon", "Tue", "Wed"...] format mein save hoga
+    required: true
+  },
+  // Date field ko optional rakha hai kyunki ab hum Weekly Logic use kar rahe hain
   date: { 
-    type: String, // YYYY-MM-DD format mein save hoga
-    required: true 
+    type: String, 
+    default: "Daily" 
   },
   availableSeats: { 
     type: Number, 
     default: 30 
   },
   amenities: {
-    type: [String], // Extra feature (AC, WiFi, etc.)
+    type: [String], 
     default: ["Water Bottle", "Charging Point"]
   },
   createdAt: { 
@@ -48,6 +54,5 @@ const busSchema = new mongoose.Schema({
   }
 });
 
-// Model ko export karein
 const Bus = mongoose.model("Bus", busSchema);
 export default Bus;
