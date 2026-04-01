@@ -5,7 +5,8 @@ import connectDB from "./config/db.js";
 
 // Routes Imports
 import authRoutes from "./routes/authRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";  // Import check karein
+import adminRoutes from "./routes/adminRoutes.js";
+import busRoutes from "./routes/busRoutes.js"; // <--- Naya Import
 
 // Load Environment Variables
 dotenv.config();
@@ -32,6 +33,9 @@ app.use("/api/admin", adminRoutes);
 
 // Login, OTP, aur Profile functionality ke liye
 app.use("/api/auth", authRoutes);
+
+// Public Bus Search functionality ke liye (Home/Search page)
+app.use("/api/bus", busRoutes); // <--- Is line ko add kiya gaya hai
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
