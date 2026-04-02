@@ -1,11 +1,13 @@
 import Bus from "../models/Bus.js";
 import City from "../models/City.js";
 
-// 1. Add New Bus with Automatic City/State Management
+// 1. Add New Bus with Full Fields & City/State Management
 export const addBus = async (req, res) => {
   const { 
     busName, 
     busNumber, 
+    comfortType,
+    seatType,
     source, 
     sourceState, 
     destination, 
@@ -13,43 +15,47 @@ export const addBus = async (req, res) => {
     departureTime, 
     arrivalTime, 
     price, 
-    seats 
+    availableSeats,
+    availableDays,
+    amenities
   } = req.body;
 
   try {
-    // --- STEP 1: SOURCE CITY KO UPDATE YA CREATE KAREIN ---
-    // Agar city nahi hai toh nayi banegi, agar hai toh state update ho jayega
+    // --- STEP 1: SOURCE CITY UPDATE/CREATE ---
     await City.findOneAndUpdate(
-      { name: { $regex: new RegExp(`^${source}$`, 'i') } }, // Case-insensitive search
-      { name: source, state: sourceState }, // Data to save
-      { upsert: true, new: true } // Upsert: true matlab agar nahi hai toh create karo
+      { name: { $regex: new RegExp(`^${source}$`, 'i') } },
+      { name: source, state: sourceState },
+      { upsert: true, new: true }
     );
 
-    // --- STEP 2: DESTINATION CITY KO UPDATE YA CREATE KAREIN ---
+    // --- STEP 2: DESTINATION CITY UPDATE/CREATE ---
     await City.findOneAndUpdate(
       { name: { $regex: new RegExp(`^${destination}$`, 'i') } },
       { name: destination, state: destinationState },
       { upsert: true, new: true }
     );
 
-    // --- STEP 3: NAYI BUS SAVE KAREIN ---
-    // Bus model mein state save nahi hoga kyunki aapne wahan field nahi banayi hai
+    // --- STEP 3: SAVE BUS WITH ALL NEW FIELDS ---
     const newBus = new Bus({
       busName,
       busNumber,
-      source, // Sirf city name
-      destination, // Sirf city name
+      comfortType,
+      seatType,
+      source,
+      destination,
       departureTime,
       arrivalTime,
       price,
-      seats,
-      date: req.body.date // Ensure karein frontend se date aa rahi hai
+      availableSeats,
+      availableDays, // Array format: ["Mon", "Tue"]
+      amenities,      // Array format: ["WiFi", "AC"]
+      date: req.body.date || "Daily" // Default to Daily if not provided
     });
 
     await newBus.save();
 
     res.status(201).json({ 
-      message: "Bus added and City states updated successfully!", 
+      message: "Bus and Fleet details added successfully!", 
       bus: newBus 
     });
 
@@ -59,26 +65,35 @@ export const addBus = async (req, res) => {
   }
 };
 
-// 2. Search Buses (Public API)
+// 2. Search Buses (With Weekly/Daily Logic)
 export const searchBuses = async (req, res) => {
   try {
     const { source, destination, date } = req.query;
 
     let query = {};
+    
+    // Case-insensitive city search
     if (source) query.source = { $regex: new RegExp(`^${source}$`, "i") };
     if (destination) query.destination = { $regex: new RegExp(`^${destination}$`, "i") };
-    if (date) query.date = date;
 
-    // Sorting by departure time (Early to Late)
+    // --- WEEKLY LOGIC ---
+    if (date) {
+      const selectedDate = new Date(date);
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const dayName = days[selectedDate.getDay()];
+      
+      // Sirf wahi bus dikhao jo us din (e.g. "Mon") available ho
+      query.availableDays = dayName;
+    }
+
     const buses = await Bus.find(query).sort({ departureTime: 1 });
-
     res.status(200).json(buses);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// 3. Get All Buses (For Admin Dashboard)
+// 3. Get All Buses (Admin View)
 export const getAllBuses = async (req, res) => {
   try {
     const buses = await Bus.find().sort({ createdAt: -1 });
@@ -92,7 +107,7 @@ export const getAllBuses = async (req, res) => {
 export const deleteBus = async (req, res) => {
   try {
     await Bus.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "Bus deleted successfully" });
+    res.status(200).json({ message: "Bus deleted successfully from fleet" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
