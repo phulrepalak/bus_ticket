@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // useLocation add kiya
 import heroImg from "../assets/hero.png";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [date, setDate] = useState("");
-  const [cities, setCities] = useState([]); // Database cities
+  const location = useLocation(); // Location hook ka use
+
+  // Pehle check karenge ki kya Search results se wapas aaye hain (Modify Search)
+  // Agar location.state mein data hai toh wo use hoga, nahi toh empty string
+  const [from, setFrom] = useState(location.state?.from || "");
+  const [to, setTo] = useState(location.state?.to || "");
+  const [date, setDate] = useState(location.state?.date || "");
+  
+  const [cities, setCities] = useState([]); 
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
 
-  // Cities fetch karne ka logic
   useEffect(() => {
     const fetchCities = async () => {
       try {
@@ -25,7 +29,6 @@ const Home = () => {
     fetchCities();
   }, []);
 
-  // Suggestions filter logic for 'From'
   const handleFromChange = (value) => {
     setFrom(value);
     if (value.trim().length > 0) {
@@ -38,7 +41,6 @@ const Home = () => {
     }
   };
 
-  // Suggestions filter logic for 'To'
   const handleToChange = (value) => {
     setTo(value);
     if (value.trim().length > 0) {
@@ -61,7 +63,6 @@ const Home = () => {
 
   return (
     <div>
-      {/* HERO SECTION */}
       <div
         className="h-[95vh] bg-cover bg-center flex items-center justify-center text-white relative"
         style={{ backgroundImage: `url(${heroImg})` }}
@@ -72,7 +73,6 @@ const Home = () => {
             Book Your <span className="text-orange-400">Bus</span> Easily
           </h1>
           
-          {/* SEARCH BAR */}
           <div className="mt-12 flex justify-center w-full">
             <div className="bg-white rounded-2xl shadow-2xl px-4 py-4 md:px-6 md:py-5 w-[95%] md:w-[80%] lg:w-[65%] flex flex-col md:flex-row items-center gap-4">
               
@@ -125,7 +125,6 @@ const Home = () => {
                 />
               </div>
 
-              {/* UPDATED BUTTON */}
               <button 
                 onClick={handleSearch}
                 className="bg-orange-500 hover:bg-orange-600 active:rounded-full text-white px-10 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg"
