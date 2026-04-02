@@ -110,7 +110,7 @@ export const deleteBus = async (req, res) => {
     res.status(200).json({ message: "Bus deleted successfully from fleet" });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
+  } 
 };
 // 5. Update Bus Details (Edit Feature)
 export const updateBus = async (req, res) => {
