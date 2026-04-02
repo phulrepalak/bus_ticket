@@ -112,3 +112,28 @@ export const deleteBus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// 5. Update Bus Details (Edit Feature)
+export const updateBus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Naya data update karenge aur { new: true } se updated document waapas milega
+    const updatedBus = await Bus.findByIdAndUpdate(
+      id, 
+      { $set: req.body }, 
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedBus) {
+      return res.status(404).json({ message: "Bus not found" });
+    }
+
+    res.status(200).json({ 
+      message: "Bus details updated successfully!", 
+      bus: updatedBus 
+    });
+  } catch (err) {
+    console.error("Error updating bus:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};

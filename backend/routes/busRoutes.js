@@ -1,5 +1,12 @@
 import express from "express";
 import Bus from "../models/Bus.js";
+import { 
+  addBus, 
+  searchBuses, 
+  getAllBuses, 
+  updateBus, 
+  deleteBus 
+} from "../controllers/busController.js";
 
 const router = express.Router();
 
@@ -43,5 +50,19 @@ router.get("/search", async (req, res) => {
     res.status(500).json({ error: "Something went wrong while searching buses." });
   }
 });
+//Sabhi buses ko fetch karne ke liye (Manage Bus page par dikhane ke liye)
+// Method: GET | URL: /api/bus/all
+router.get("/all", getAllBuses);
 
+// Nayi bus add karne ke liye
+// Method: POST | URL: /api/bus/add
+router.post("/add", addBus);
+
+// Bus ki details update/edit karne ke liye
+// Method: PUT | URL: /api/bus/update/:id
+router.put("/update/:id", updateBus);
+
+// Bus ko delete karne ke liye
+// Method: DELETE | URL: /api/bus/delete/:id
+router.delete("/delete/:id", deleteBus);
 export default router;

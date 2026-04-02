@@ -11,6 +11,7 @@ import OTPPage from "./pages/OTPPage";
 import SearchResults from "./pages/SearchResults";
 import AccountCreated from "./pages/AccountCreated";
 import CompleteProfile from "./pages/CompleteProfile";
+import ManageBus from "./pages/ManageBus";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard"; // Isme Add Bus ka form hai
@@ -37,13 +38,14 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} /> 
         
         {/* Manage Bus page ka path */}
-        {/* <Route path="/manage-bus" element={<ManageBus />} /> */}
+        <Route path="/manage-bus" element={<ManageBus />} />
         
         {/* Saari bookings dekhne ka path */}
         {/* <Route path="/view-bookings" element={<ViewBookings />} /> */}
 
         {/* --- REDIRECTS --- */}
         <Route path="*" element={<Navigate to="/" />} />
+       
       </Routes>
     </Router>
   );
