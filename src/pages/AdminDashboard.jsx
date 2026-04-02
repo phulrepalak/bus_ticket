@@ -3,9 +3,14 @@ import React, { useState } from "react";
 export default function AdminDashboard() {
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   
+  // Amenities ki list jo Admin select kar sakta hai
+  const amenityOptions = ["Water Bottle", "Charging Point", "WiFi", "Blanket", "Pillow", "Reading Light", "CCTV", "Movies"];
+
   const [bus, setBus] = useState({
     busName: "",
     busNumber: "",
+    comfortType: "Non-AC",
+    seatType: "Seater",
     source: "",
     sourceState: "",
     destination: "",
@@ -14,7 +19,8 @@ export default function AdminDashboard() {
     arrivalTime: "",
     price: "",
     availableSeats: 30,
-    availableDays: [] // Dinon ko store karne ke liye
+    availableDays: [],
+    amenities: ["Water Bottle", "Charging Point"] // Default values as per your model
   });
 
   const [loading, setLoading] = useState(false);
@@ -27,10 +33,16 @@ export default function AdminDashboard() {
     setBus({ ...bus, availableDays: updatedDays });
   };
 
+  // Amenities selection logic
+  const handleAmenityChange = (amenity) => {
+    const updatedAmenities = bus.amenities.includes(amenity)
+      ? bus.amenities.filter((a) => a !== amenity)
+      : [...bus.amenities, amenity];
+    setBus({ ...bus, amenities: updatedAmenities });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation: Kam se kam ek din select hona chahiye
     if (bus.availableDays.length === 0) {
       alert("Please select at least one day for the schedule!");
       return;
@@ -52,19 +64,19 @@ export default function AdminDashboard() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Bus Weekly Schedule added successfully!");
-        // Form Reset
+        alert("Bus Schedule added successfully!");
         setBus({
-          busName: "", busNumber: "", source: "", sourceState: "",
-          destination: "", destinationState: "", departureTime: "",
-          arrivalTime: "", price: "", availableSeats: 30, availableDays: []
+          busName: "", busNumber: "", comfortType: "Non-AC", seatType: "Seater",
+          source: "", sourceState: "", destination: "", destinationState: "",
+          departureTime: "", arrivalTime: "", price: "", availableSeats: 30, 
+          availableDays: [], amenities: ["Water Bottle", "Charging Point"]
         });
       } else {
         alert("Error: " + data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error. Please check if backend is running.");
+      alert("Server error.");
     } finally {
       setLoading(false);
     }
@@ -73,14 +85,14 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-4xl">
-        <div className="mb-8 border-b pb-4">
-          <h1 className="text-3xl font-bold text-blue-700">Add Weekly Schedule</h1>
-          <p className="text-gray-500">Define the routes and days this bus will operate.</p>
+        <div className="mb-8 border-b pb-4 text-center">
+          <h1 className="text-3xl font-bold text-blue-700">Add New Bus Details</h1>
+          <p className="text-gray-500 font-medium">Manage fleet, routes, and services</p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Bus Info */}
+          {/* Basic Info */}
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Bus Name</label>
             <input type="text" placeholder="e.g. Verma Travels" className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={bus.busName} onChange={e => setBus({...bus, busName: e.target.value})} required />
@@ -91,19 +103,50 @@ export default function AdminDashboard() {
             <input type="text" placeholder="e.g. MP-04-AB-1234" className="p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value={bus.busNumber} onChange={e => setBus({...bus, busNumber: e.target.value})} required />
           </div>
 
-          {/* Source Section */}
-          <div className="flex flex-col gap-2 p-4 bg-gray-50 rounded-xl">
-            <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">From (Source)</label>
-            <input 
-              type="text" placeholder="City Name" 
-              className="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400" 
-              value={bus.source} onChange={e => setBus({...bus, source: e.target.value})} required 
-            />
-            <input 
-              type="text" placeholder="State Name" 
-              className="p-2 border rounded-lg text-sm bg-white outline-none focus:border-blue-400" 
-              value={bus.sourceState} onChange={e => setBus({...bus, sourceState: e.target.value})} required 
-            />
+          {/* Comfort & Seat */}
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-600 mb-1">Comfort Type</label>
+            <select className="p-3 border rounded-lg bg-white outline-none" value={bus.comfortType} onChange={e => setBus({...bus, comfortType: e.target.value})}>
+              <option value="AC">AC</option>
+              <option value="Non-AC">Non-AC</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-600 mb-1">Seat Type</label>
+            <select className="p-3 border rounded-lg bg-white outline-none" value={bus.seatType} onChange={e => setBus({...bus, seatType: e.target.value})}>
+              <option value="Seater">Seater</option>
+              <option value="Sleeper">Sleeper</option>
+              <option value="Semi-Sleeper">Semi-Sleeper</option>
+            </select>
+          </div>
+
+          {/* Source & Destination */}
+          <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
+            <input type="text" placeholder="Source City" className="p-3 border rounded-lg outline-none" value={bus.source} onChange={e => setBus({...bus, source: e.target.value})} required />
+            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm outline-none" value={bus.sourceState} onChange={e => setBus({...bus, sourceState: e.target.value})} required />
+          </div>
+
+          <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
+            <input type="text" placeholder="Destination City" className="p-3 border rounded-lg outline-none" value={bus.destination} onChange={e => setBus({...bus, destination: e.target.value})} required />
+            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm outline-none" value={bus.destinationState} onChange={e => setBus({...bus, destinationState: e.target.value})} required />
+          </div>
+
+          {/* Price & Seats */}
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-600">Ticket Price (₹)</label>
+            <input type="number" className="p-3 border rounded-lg outline-none" value={bus.price} onChange={e => setBus({...bus, price: e.target.value})} required />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-600">Available Seats</label>
+            <input type="number" className="p-3 border rounded-lg outline-none" value={bus.availableSeats} onChange={e => setBus({...bus, availableSeats: e.target.value})} required />
+          </div>
+
+          {/* Time */}
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold text-gray-600">Departure</label>
+            <input type="time" className="p-3 border rounded-lg outline-none" value={bus.departureTime} onChange={e => setBus({...bus, departureTime: e.target.value})} required />
           </div>
 
           {/* Destination Section */}
@@ -121,21 +164,21 @@ export default function AdminDashboard() {
             />
           </div>
 
-          {/* AVAILABLE DAYS SECTION */}
+           {/* Running Days */}
           <div className="md:col-span-2 bg-blue-50 p-5 rounded-2xl border border-blue-100">
-            <label className="text-sm font-bold text-blue-900 mb-4 block uppercase tracking-wider text-center">
-              📅 Select Running Days (Weekly Schedule)
+            <label className="text-sm font-bold text-blue-900 mb-3 block uppercase tracking-wider text-center">
+                Operational Days
             </label>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2">
               {daysOfWeek.map((day) => (
                 <button
                   key={day}
                   type="button"
                   onClick={() => handleDayChange(day)}
-                  className={`px-6 py-2.5 rounded-xl font-black transition-all duration-200 border-2 ${
+                  className={`px-5 py-2 rounded-xl font-bold border-2 transition-all ${
                     bus.availableDays.includes(day)
-                      ? "bg-blue-600 text-white border-blue-600 shadow-lg scale-105"
-                      : "bg-white text-gray-400 border-gray-200 hover:border-blue-300"
+                      ? "bg-blue-600 text-white border-blue-600 scale-105"
+                      : "bg-white text-gray-400 border-gray-200"
                   }`}
                 >
                   {day}
@@ -144,28 +187,29 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Timing & Price */}
-          <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600 mb-1">Departure Time</label>
-            <input type="time" className="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={bus.departureTime} onChange={e => setBus({...bus, departureTime: e.target.value})} required />
+          {/* AMENITIES SECTION */}
+          <div className="md:col-span-2 bg-gray-50 p-5 rounded-2xl border border-gray-200">
+            <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
+                Amenities Provided
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {amenityOptions.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => handleAmenityChange(item)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                    bus.amenities.includes(item)
+                      ? "bg-green-600 text-white border-green-600 shadow-md"
+                      : "bg-white text-gray-500 border-gray-300 hover:border-green-400"
+                  }`}
+                >
+                  {bus.amenities.includes(item) ? "✓ " : "+ "} {item}
+                </button>
+              ))}
+          </div>
           </div>
 
-          <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600 mb-1">Arrival Time</label>
-            <input type="time" className="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={bus.arrivalTime} onChange={e => setBus({...bus, arrivalTime: e.target.value})} required />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600 mb-1">Ticket Price (₹)</label>
-            <input type="number" placeholder="e.g. 750" className="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={bus.price} onChange={e => setBus({...bus, price: e.target.value})} required />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600 mb-1">Total Seats</label>
-            <input type="number" className="p-3 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={bus.availableSeats} onChange={e => setBus({...bus, availableSeats: e.target.value})} required />
-          </div>
-
-          {/* Submit Button */}
           <button 
             type="submit" 
             disabled={loading}
@@ -175,7 +219,7 @@ export default function AdminDashboard() {
               : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-blue-200'
             }`}
           >
-            {loading ? "Syncing Schedule..." : "Confirm & Save Schedule"}
+            {loading ? "Saving..." : "Add Bus to Fleet"}
           </button>
         </form>
       </div>
