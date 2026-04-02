@@ -207,7 +207,7 @@ export default function AdminDashboard() {
                   {bus.amenities.includes(item) ? "✓ " : "+ "} {item}
                 </button>
               ))}
-          </div>
+            </div>
           </div>
 
           <button 
