@@ -25,14 +25,14 @@ export const addBus = async (req, res) => {
     await City.findOneAndUpdate(
       { name: { $regex: new RegExp(`^${source}$`, 'i') } },
       { name: source, state: sourceState },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     // --- STEP 2: DESTINATION CITY UPDATE/CREATE ---
     await City.findOneAndUpdate(
       { name: { $regex: new RegExp(`^${destination}$`, 'i') } },
       { name: destination, state: destinationState },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     // --- STEP 3: SAVE BUS WITH ALL NEW FIELDS ---
@@ -42,14 +42,16 @@ export const addBus = async (req, res) => {
       comfortType,
       seatType,
       source,
+      sourceState,
       destination,
+      destinationState,
       departureTime,
       arrivalTime,
       price,
       availableSeats,
-      availableDays, // Array format: ["Mon", "Tue"]
-      amenities,      // Array format: ["WiFi", "AC"]
-      date: req.body.date || "Daily" // Default to Daily if not provided
+      availableDays, 
+      amenities,      
+      date: req.body.date || "Daily" 
     });
 
     await newBus.save();
@@ -72,7 +74,7 @@ export const searchBuses = async (req, res) => {
 
     let query = {};
     
-    // Case-insensitive city search
+    // Search with case-insensitive regex for flexibility
     if (source) query.source = { $regex: new RegExp(`^${source}$`, "i") };
     if (destination) query.destination = { $regex: new RegExp(`^${destination}$`, "i") };
 
@@ -82,7 +84,7 @@ export const searchBuses = async (req, res) => {
       const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const dayName = days[selectedDate.getDay()];
       
-      // Sirf wahi bus dikhao jo us din (e.g. "Mon") available ho
+      // Check if bus runs on this specific day
       query.availableDays = dayName;
     }
 
@@ -116,12 +118,30 @@ export const deleteBus = async (req, res) => {
 export const updateBus = async (req, res) => {
   try {
     const { id } = req.params;
+    const { source, sourceState, destination, destinationState } = req.body;
+
+    // --- UPDATE CITY/STATE MAPPING IF CHANGED ---
+    if (source && sourceState) {
+      await City.findOneAndUpdate(
+        { name: { $regex: new RegExp(`^${source}$`, 'i') } },
+        { name: source, state: sourceState },
+        { upsert: true, returnDocument: 'after' }
+      );
+    }
+
+    if (destination && destinationState) {
+      await City.findOneAndUpdate(
+        { name: { $regex: new RegExp(`^${destination}$`, 'i') } },
+        { name: destination, state: destinationState },
+        { upsert: true, returnDocument: 'after' }
+      );
+    }
     
-    // Naya data update karenge aur { new: true } se updated document waapas milega
     const updatedBus = await Bus.findByIdAndUpdate(
       id, 
       { $set: req.body }, 
-      { new: true, runValidators: true }
+      // FIX: Changed { new: true } to { returnDocument: 'after' }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updatedBus) {

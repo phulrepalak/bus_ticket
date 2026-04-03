@@ -9,7 +9,6 @@ const busSchema = new mongoose.Schema({
     type: String, 
     required: true, 
     unique: true // Ek bus number se do entries nahi ho sakti
- 
   },
   // Naya Field: AC ya Non-AC
   comfortType: {
@@ -29,7 +28,17 @@ const busSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  // Added: Source City ka State save karne ke liye
+  sourceState: { 
+    type: String, 
+    required: true 
+  },
   destination: { 
+    type: String, 
+    required: true 
+  },
+  // Added: Destination City ka State save karne ke liye
+  destinationState: { 
     type: String, 
     required: true 
   },

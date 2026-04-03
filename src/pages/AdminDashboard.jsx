@@ -31,6 +31,37 @@ export default function AdminDashboard() {
 
   const [loading, setLoading] = useState(false);
 
+  // --- LOGIC: Fetch State from City Model ---
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/admin/cities");
+        const citiesList = await response.json();
+
+        const matchedSource = citiesList.find(c => 
+          c.name.toLowerCase() === bus.source.toLowerCase()
+        );
+        const matchedDest = citiesList.find(c => 
+          c.name.toLowerCase() === bus.destination.toLowerCase()
+        );
+
+        if (matchedSource || matchedDest) {
+          setBus(prev => ({
+            ...prev,
+            sourceState: matchedSource ? matchedSource.state : prev.sourceState,
+            destinationState: matchedDest ? matchedDest.state : prev.destinationState
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching city states:", error);
+      }
+    };
+
+    if (bus.source || bus.destination) {
+      fetchStates();
+    }
+  }, [bus.source, bus.destination]);
+
   useEffect(() => {
     if (editData) {
       setBus(editData);
@@ -61,7 +92,6 @@ export default function AdminDashboard() {
 
     setLoading(true);
 
-    // FIX: Sahi URLs aapke busRoutes.js ke hisaab se
     const url = editData 
       ? `http://localhost:5000/api/bus/update/${editData._id}` 
       : "http://localhost:5000/api/bus/add";
@@ -81,7 +111,6 @@ export default function AdminDashboard() {
         alert(editData ? "Bus Updated in Database!" : "Bus Added to Database!");
         navigate("/manage-bus");
       } else {
-        // Backend se aane wala error message dikhayega
         alert("Server Error: " + (data.message || "Failed to save"));
       }
     } catch (err) {
@@ -136,12 +165,14 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
             <label className="text-xs font-bold text-blue-600 uppercase">From (Source)</label>
             <input type="text" placeholder="City" className="p-3 border rounded-lg" value={bus.source} onChange={e => setBus({...bus, source: e.target.value})} required />
+            {/* Added manual onChange for sourceState */}
             <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm" value={bus.sourceState} onChange={e => setBus({...bus, sourceState: e.target.value})} required />
           </div>
 
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
             <label className="text-xs font-bold text-blue-600 uppercase">To (Destination)</label>
             <input type="text" placeholder="City" className="p-3 border rounded-lg" value={bus.destination} onChange={e => setBus({...bus, destination: e.target.value})} required />
+            {/* Added manual onChange for destinationState */}
             <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm" value={bus.destinationState} onChange={e => setBus({...bus, destinationState: e.target.value})} required />
           </div>
 
@@ -211,7 +242,7 @@ export default function AdminDashboard() {
               : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-blue-200'
             }`}
           >
-            {loading ? "Saving..." : "Add Bus to Fleet"}
+            {loading ? "Saving..." : (editData ? "Update Bus" : "Add Bus to Fleet")}
           </button>
         </form>
       </div>
