@@ -57,10 +57,16 @@ export default function SearchResults() {
     );
   };
 
-  const handleSelectSeat = (bus) => {
-    navigate(`/select-seat/${bus._id}`, { state: { bus, date } });
-  };
-
+  // SearchResults.jsx ke andar ye function check karein
+const handleSelectSeat = (bus) => {
+  // Hum navigate kar rahe hain aur sath mein bus ka poora data "state" mein bhej rahe hain
+  navigate(`/select-seat/${bus._id}`, { 
+    state: { 
+      bus: bus, 
+      date: date // Jo search bar se date aayi thi
+    } 
+  });
+};
   return (
     <div className="min-h-screen bg-gray-100 pb-10 text-left">
       {/* Header Summary */}
@@ -114,7 +120,7 @@ export default function SearchResults() {
                 ))}
               </div>
             </div>
-            <button onClick={() => {setTimeFilter(""); setTypeFilters([]);}} className="mt-8 w-full py-2 text-xs text-blue-600 font-bold hover:bg-blue-50 rounded-lg transition-all">Clear All Filters</button>
+            <button onClick={() => {setTimeFilter(""); setTypeFilters([]);}} className="mt-8 w-full py-2 text-xs text-blue-900 font-bold hover:bg-blue-50 rounded-lg transition-all">Clear All Filters</button>
           </div>
         </div>
 
@@ -172,7 +178,12 @@ export default function SearchResults() {
                   <div className="w-full md:w-1/4 text-right md:border-l md:pl-8 border-gray-100">
                     <p className="text-3xl font-black text-blue-900">₹{bus.price}</p>
                     <p className="text-[11px] font-black text-green-600 mb-4 bg-green-50 inline-block px-2 py-0.5 rounded-md mt-1">{bus.availableSeats} Seats Left</p>
-                    <button onClick={() => handleSelectSeat(bus)} className="w-full bg-orange-500 text-white py-3.5 rounded-2xl font-black hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all active:scale-95">Select Seat</button>
+                    <button 
+  onClick={() => handleSelectSeat(bus)} 
+  className="w-full bg-orange-500 text-white py-3.5 rounded-2xl font-black hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all active:scale-95"
+>
+  Select Seat
+</button>
                   </div>
                 </div>
                 <div className="bg-gray-50/80 px-6 py-3 border-t flex flex-wrap gap-5 items-center">
