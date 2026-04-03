@@ -12,6 +12,7 @@ import SearchResults from "./pages/SearchResults";
 import AccountCreated from "./pages/AccountCreated";
 import CompleteProfile from "./pages/CompleteProfile";
 import ManageBus from "./pages/ManageBus";
+import SelectSeat from "./pages/SelectSeat";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard"; // Isme Add Bus ka form hai
@@ -32,6 +33,7 @@ function App() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/account-created" element={<AccountCreated />} />
         <Route path="/profile" element={<CompleteProfile />} />
+        <Route path="/select-seat/:busId" element={<SelectSeat />} />
 
         {/* --- ADMIN ONLY ROUTES --- */}
         {/* Jab Navbar mein 'Add Bus' click hoga toh ye khulega */}
