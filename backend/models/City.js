@@ -4,14 +4,28 @@ const citySchema = new mongoose.Schema({
   name: { 
     type: String, 
     required: true, 
-    unique: true, // Ek city do baar add nahi honi chahiye
-    trim: true    // Extra spaces ko remove karne ke liye
+    unique: true, 
+    trim: true,
+    index: true 
   },
   state: { 
     type: String, 
     required: true,
     trim: true
   },
+  // Naye Fields: Jo points admin bus add karte waqt dalega wo yahan save honge
+  boardingPoints: [
+    {
+      type: String,
+      trim: true
+    }
+  ],
+  droppingPoints: [
+    {
+      type: String,
+      trim: true
+    }
+  ],
   isPopular: { 
     type: Boolean, 
     default: false // Agar koi city main hub hai (like Bhopal/Indore) toh ise true kar sakte hain
