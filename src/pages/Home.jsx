@@ -100,7 +100,7 @@ const Home = () => {
                 </div>
 
                 {/* SWAP BUTTON - Now inside the Source field on the right */}
-                <div className="absolute right-28 top-1/2 -translate-y-1/2 z-20">
+                <div className="absolute right-15 top-1/2 -translate-y-1/2 z-20">
                   <button 
                     type="button"
                     onClick={handleSwap}
