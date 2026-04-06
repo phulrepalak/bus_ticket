@@ -8,16 +8,14 @@ const busSchema = new mongoose.Schema({
   busNumber: { 
     type: String, 
     required: true, 
-    unique: true // Ek bus number se do entries nahi ho sakti
+    unique: true 
   },
-  // Naya Field: AC ya Non-AC
   comfortType: {
     type: String,
     required: true,
     enum: ["AC", "Non-AC"],
     default: "Non-AC"
   },
-  // Naya Field: Sleeper ya Seater
   seatType: {
     type: String,
     required: true,
@@ -28,7 +26,6 @@ const busSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // Added: Source City ka State save karne ke liye
   sourceState: { 
     type: String, 
     required: true 
@@ -37,11 +34,24 @@ const busSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // Added: Destination City ka State save karne ke liye
   destinationState: { 
     type: String, 
     required: true 
   },
+  // --- Naye Fields: Boarding aur Dropping Points ---
+  boardingPoints: [
+    {
+      location: { type: String, required: true },
+      time: { type: String, required: true }
+    }
+  ],
+  droppingPoints: [
+    {
+      location: { type: String, required: true },
+      time: { type: String, required: true }
+    }
+  ],
+  // -----------------------------------------------
   departureTime: { 
     type: String, 
     required: true 
@@ -54,12 +64,10 @@ const busSchema = new mongoose.Schema({
     type: Number, 
     required: true 
   },
-  // Naya Field: Weekly Schedule ke liye
   availableDays: {
-    type: [String], // ["Mon", "Tue", "Wed"...] format mein save hoga
+    type: [String], 
     required: true
   },
-  // Date field ko optional rakha hai kyunki ab hum Weekly Logic use kar rahe hain
   date: { 
     type: String, 
     default: "Daily" 
