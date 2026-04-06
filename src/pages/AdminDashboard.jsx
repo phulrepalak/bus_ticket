@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
 export default function AdminDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const editData = location.state?.editBus;
 
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  
-  // Amenities ki list jo Admin select kar sakta hai
   const amenityOptions = ["Water Bottle", "Charging Point", "WiFi", "Blanket", "Pillow", "Reading Light", "CCTV", "Movies"];
 
   const [bus, setBus] = useState({
@@ -26,46 +23,45 @@ export default function AdminDashboard() {
     price: "",
     availableSeats: 30,
     availableDays: [],
-    amenities: ["Water Bottle", "Charging Point"] // Default values as per your model
+    amenities: ["Water Bottle", "Charging Point"],
+    boardingPoints: [], // New field
+    droppingPoints: []  // New field
   });
 
   const [loading, setLoading] = useState(false);
+  const [cityData, setCityData] = useState([]);
 
-  // --- LOGIC: Fetch State from City Model ---
+  // --- Logic: Fetch Cities and Sync States/Points ---
   useEffect(() => {
-    const fetchStates = async () => {
+    const fetchCities = async () => {
       try {
         const response = await fetch("http://localhost:5000/api/admin/cities");
         const citiesList = await response.json();
+        setCityData(citiesList);
 
-        const matchedSource = citiesList.find(c => 
-          c.name.toLowerCase() === bus.source.toLowerCase()
-        );
-        const matchedDest = citiesList.find(c => 
-          c.name.toLowerCase() === bus.destination.toLowerCase()
-        );
+        const matchedSource = citiesList.find(c => c.name.toLowerCase() === bus.source.toLowerCase());
+        const matchedDest = citiesList.find(c => c.name.toLowerCase() === bus.destination.toLowerCase());
 
         if (matchedSource || matchedDest) {
           setBus(prev => ({
             ...prev,
             sourceState: matchedSource ? matchedSource.state : prev.sourceState,
-            destinationState: matchedDest ? matchedDest.state : prev.destinationState
+            destinationState: matchedDest ? matchedDest.state : prev.destinationState,
+            // Auto-fill points if they are empty (for new bus entry)
+            boardingPoints: !editData && matchedSource ? matchedSource.boardingPoints.map(p => ({ location: p, time: "" })) : prev.boardingPoints,
+            droppingPoints: !editData && matchedDest ? matchedDest.droppingPoints.map(p => ({ location: p, time: "" })) : prev.droppingPoints
           }));
         }
       } catch (error) {
-        console.error("Error fetching city states:", error);
+        console.error("Error fetching cities:", error);
       }
     };
 
-    if (bus.source || bus.destination) {
-      fetchStates();
-    }
+    fetchCities();
   }, [bus.source, bus.destination]);
 
   useEffect(() => {
-    if (editData) {
-      setBus(editData);
-    }
+    if (editData) setBus(editData);
   }, [editData]);
 
   const handleDayChange = (day) => {
@@ -75,7 +71,6 @@ export default function AdminDashboard() {
     setBus({ ...bus, availableDays: updatedDays });
   };
 
-  // Amenities selection logic
   const handleAmenityChange = (amenity) => {
     const updatedAmenities = bus.amenities.includes(amenity)
       ? bus.amenities.filter((a) => a !== amenity)
@@ -83,38 +78,38 @@ export default function AdminDashboard() {
     setBus({ ...bus, amenities: updatedAmenities });
   };
 
+  // Logic to update time for points
+  const handlePointTimeChange = (type, index, time) => {
+    const updatedPoints = [...bus[type]];
+    updatedPoints[index].time = time;
+    setBus({ ...bus, [type]: updatedPoints });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (bus.availableDays.length === 0) {
-      alert("Please select at least one day for the schedule!");
+      alert("Please select at least one day!");
       return;
     }
 
     setLoading(true);
-
-    const url = editData 
-      ? `http://localhost:5000/api/bus/update/${editData._id}` 
-      : "http://localhost:5000/api/bus/add";
-    
+    const url = editData ? `http://localhost:5000/api/bus/update/${editData._id}` : "http://localhost:5000/api/bus/add";
     const method = editData ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
-        method: method,
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bus),
       });
-
-      const data = await res.json();
-
       if (res.ok) {
-        alert(editData ? "Bus Updated in Database!" : "Bus Added to Database!");
+        alert(editData ? "Bus Updated!" : "Bus Added!");
         navigate("/manage-bus");
       } else {
-        alert("Server Error: " + (data.message || "Failed to save"));
+        const data = await res.json();
+        alert("Error: " + (data.message || "Failed to save"));
       }
     } catch (err) {
-      console.error(err);
       alert("Server error.");
     } finally {
       setLoading(false);
@@ -125,25 +120,19 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-4xl">
         <div className="mb-8 border-b pb-4 text-center">
-          <h1 className="text-3xl font-bold text-blue-700">
-            {editData ? "Edit Bus Details" : "Add New Bus Details"}
-          </h1>
+          <h1 className="text-3xl font-bold text-blue-700">{editData ? "Edit Bus Details" : "Add New Bus Details"}</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Basic Info */}
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Bus Name</label>
             <input type="text" className="p-3 border rounded-lg outline-none" value={bus.busName} onChange={e => setBus({...bus, busName: e.target.value})} required />
           </div>
-
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Bus Number</label>
             <input type="text" className="p-3 border rounded-lg outline-none" value={bus.busNumber} onChange={e => setBus({...bus, busNumber: e.target.value})} required />
           </div>
 
-          {/* Comfort & Seat */}
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Comfort Type</label>
             <select className="p-3 border rounded-lg bg-white" value={bus.comfortType} onChange={e => setBus({...bus, comfortType: e.target.value})}>
@@ -176,7 +165,28 @@ export default function AdminDashboard() {
             <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm" value={bus.destinationState} onChange={e => setBus({...bus, destinationState: e.target.value})} required />
           </div>
 
-          {/* Price & Seats */}
+          {/* BOARDING POINTS WITH TIME */}
+          <div className="md:col-span-1 bg-green-50 p-4 rounded-xl border border-green-100">
+            <label className="text-xs font-bold text-green-700 uppercase mb-2 block">Boarding Points & Time</label>
+            {bus.boardingPoints.map((point, idx) => (
+              <div key={idx} className="flex items-center gap-2 mb-2">
+                <span className="text-xs flex-1 truncate">{point.location}</span>
+                <input type="time" className="p-1 text-xs border rounded" value={point.time} onChange={(e) => handlePointTimeChange("boardingPoints", idx, e.target.value)} />
+              </div>
+            ))}
+          </div>
+
+          {/* DROPPING POINTS WITH TIME */}
+          <div className="md:col-span-1 bg-red-50 p-4 rounded-xl border border-red-100">
+            <label className="text-xs font-bold text-red-700 uppercase mb-2 block">Dropping Points & Time</label>
+            {bus.droppingPoints.map((point, idx) => (
+              <div key={idx} className="flex items-center gap-2 mb-2">
+                <span className="text-xs flex-1 truncate">{point.location}</span>
+                <input type="time" className="p-1 text-xs border rounded" value={point.time} onChange={(e) => handlePointTimeChange("droppingPoints", idx, e.target.value)} />
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600">Ticket Price (₹)</label>
             <input type="number" className="p-3 border rounded-lg" value={bus.price} onChange={e => setBus({...bus, price: e.target.value})} required />
@@ -212,9 +222,7 @@ export default function AdminDashboard() {
 
           {/* AMENITIES SECTION */}
           <div className="md:col-span-2 bg-gray-50 p-5 rounded-2xl border border-gray-200">
-            <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">
-                Amenities Provided
-            </label>
+            <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">Amenities Provided</label>
             <div className="flex flex-wrap gap-2">
               {amenityOptions.map((item) => (
                 <button
