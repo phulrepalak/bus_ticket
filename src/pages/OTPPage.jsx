@@ -14,7 +14,7 @@ export default function OTPPage() {
     setOtp(newOtp);
     // Auto-focus next input
     if (value && index < 5) {
-      const nextInput = document.querySelectorAll('input')[index + 1];
+      const nextInput = document.querySelectorAll("input")[index + 1];
       if (nextInput) nextInput.focus();
     }
   };
@@ -24,11 +24,14 @@ export default function OTPPage() {
     if (finalOtp.length !== 6) return;
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: userPhone, otp: finalOtp }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/auth/verify-otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: userPhone, otp: finalOtp }),
+        },
+      );
 
       const data = await response.json();
 
@@ -50,12 +53,15 @@ export default function OTPPage() {
         // --- 3. DYNAMIC REDIRECTION ---
         if (userRole === "admin") {
           // Admin seedha dashboard/home par jayega
-          navigate("/"); 
+          navigate("/");
         } else {
           // Normal User profile check karega
           if (data.isProfileComplete === false) {
+            // Naya user: Pehle success screen dikhayenge
             navigate("/account-created");
           } else {
+            // Purana user: Jiski profile complete hai, use seedha Home bhej do
+            // (Ya agar aap chahti hain ki wo apni details dekhe toh "/profile" bhi kar sakti hain)
             navigate("/");
           }
         }
@@ -73,8 +79,10 @@ export default function OTPPage() {
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
         <h2 className="text-xl font-semibold text-blue-700 mb-2">GoBus</h2>
         <h1 className="text-2xl font-bold mb-2">Verify OTP</h1>
-        <p className="text-gray-500 mb-6">OTP sent to: <b>+91 {userPhone}</b></p>
-        
+        <p className="text-gray-500 mb-6">
+          OTP sent to: <b>+91 {userPhone}</b>
+        </p>
+
         <div className="flex justify-center gap-2 mb-6">
           {otp.map((digit, index) => (
             <input

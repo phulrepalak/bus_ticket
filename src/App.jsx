@@ -13,6 +13,7 @@ import AccountCreated from "./pages/AccountCreated";
 import CompleteProfile from "./pages/CompleteProfile";
 import ManageBus from "./pages/ManageBus";
 import SelectSeat from "./pages/SelectSeat";
+import Profile from "./pages/Profile"
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard"; // Isme Add Bus ka form hai
@@ -44,6 +45,12 @@ function App() {
         
         {/* Saari bookings dekhne ka path */}
         {/* <Route path="/view-bookings" element={<ViewBookings />} /> */}
+
+        {/* Naya Display Page yahan hona chahiye */}
+        <Route path="/profile" element={<Profile />} />  
+        
+        {/* Form wala page alag path par rakhein */}
+        <Route path="/complete-profile" element={<CompleteProfile />} />      
 
         {/* --- REDIRECTS --- */}
         <Route path="*" element={<Navigate to="/" />} />

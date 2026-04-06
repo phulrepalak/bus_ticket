@@ -39,7 +39,7 @@ export default function CompleteProfile() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Profile updated successfully!");
+        alert("Profile created successfully!");
         navigate("/home");
       } else {
         alert(data.message || "Update failed");

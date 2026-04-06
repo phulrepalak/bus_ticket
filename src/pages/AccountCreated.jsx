@@ -55,13 +55,15 @@ export default function AccountCreated() {
           </div>
 
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/complete-profile")}
             className="w-full bg-blue-600 text-white py-3 rounded-lg mt-6 hover:bg-blue-700 transition"
           >
             Proceed to Complete Profile →
           </button>
 
-          <p className="text-sm text-gray-500 mt-3 cursor-pointer">
+          <p 
+          onClick={() => navigate("/")}
+          className="text-sm text-gray-500 mt-3 cursor-pointer">
             Explore Destinations First
           </p>
 
