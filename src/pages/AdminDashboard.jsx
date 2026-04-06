@@ -24,65 +24,110 @@ export default function AdminDashboard() {
     availableSeats: 30,
     availableDays: [],
     amenities: ["Water Bottle", "Charging Point"],
-    boardingPoints: [], // New field
-    droppingPoints: []  // New field
+    boardingPoints: [],
+    droppingPoints: []
   });
 
   const [loading, setLoading] = useState(false);
-  const [cityData, setCityData] = useState([]);
 
   // --- Logic: Fetch Cities and Sync States/Points ---
   useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/admin/cities");
-        const citiesList = await response.json();
-        setCityData(citiesList);
-
-        const matchedSource = citiesList.find(c => c.name.toLowerCase() === bus.source.toLowerCase());
-        const matchedDest = citiesList.find(c => c.name.toLowerCase() === bus.destination.toLowerCase());
-
-        if (matchedSource || matchedDest) {
-          setBus(prev => ({
-            ...prev,
-            sourceState: matchedSource ? matchedSource.state : prev.sourceState,
-            destinationState: matchedDest ? matchedDest.state : prev.destinationState,
-            // Auto-fill points if they are empty (for new bus entry)
-            boardingPoints: !editData && matchedSource ? matchedSource.boardingPoints.map(p => ({ location: p, time: "" })) : prev.boardingPoints,
-            droppingPoints: !editData && matchedDest ? matchedDest.droppingPoints.map(p => ({ location: p, time: "" })) : prev.droppingPoints
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-      }
-    };
-
-    fetchCities();
-  }, [bus.source, bus.destination]);
-
-  useEffect(() => {
-    if (editData) setBus(editData);
+    if (editData) {
+      setBus({
+        ...editData,
+        boardingPoints: editData.boardingPoints || [],
+        droppingPoints: editData.droppingPoints || []
+      });
+    }
   }, [editData]);
 
+  // Logic to handle real-time city name typing and data fetching
+  const handleCityInput = (value, type) => {
+    setBus(prev => ({ ...prev, [type]: value }));
+    
+    // Agar input field blank hai, toh state aur points ko clear karein
+    if (value.trim().length === 0) {
+      setBus(prev => ({
+        ...prev,
+        [type === "source" ? "sourceState" : "destinationState"]: "",
+        [type === "source" ? "boardingPoints" : "droppingPoints"]: []
+      }));
+      return;
+    }
+
+    // 3 characters hone par hi fetch karein
+    if (value.trim().length >= 3) {
+      fetchCityData(value, type);
+    }
+  };
+
+  const fetchCityData = async (cityName, type) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/admin/city-details/${cityName}`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        setBus(prev => {
+          if (type === "source") {
+            const pointsFromDB = data.boardingPoints || [];
+            return {
+              ...prev,
+              sourceState: data.state || "",
+              boardingPoints: pointsFromDB.map(p => ({ location: p, time: "" }))
+            };
+          } else {
+            const pointsFromDB = data.droppingPoints || [];
+            return {
+              ...prev,
+              destinationState: data.state || "",
+              droppingPoints: pointsFromDB.map(p => ({ location: p, time: "" }))
+            };
+          }
+        });
+      } else {
+        // Agar city database mein nahi milti (404), toh fields clear karein
+        setBus(prev => ({
+          ...prev,
+          [type === "source" ? "sourceState" : "destinationState"]: "",
+          [type === "source" ? "boardingPoints" : "droppingPoints"]: []
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching city details:", error);
+    }
+  };
+
   const handleDayChange = (day) => {
-    const updatedDays = bus.availableDays.includes(day)
-      ? bus.availableDays.filter((d) => d !== day)
-      : [...bus.availableDays, day];
-    setBus({ ...bus, availableDays: updatedDays });
+    setBus(prev => ({
+      ...prev,
+      availableDays: prev.availableDays.includes(day)
+        ? prev.availableDays.filter(d => d !== day)
+        : [...prev.availableDays, day]
+    }));
   };
 
   const handleAmenityChange = (amenity) => {
-    const updatedAmenities = bus.amenities.includes(amenity)
-      ? bus.amenities.filter((a) => a !== amenity)
-      : [...bus.amenities, amenity];
-    setBus({ ...bus, amenities: updatedAmenities });
+    setBus(prev => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter(a => a !== amenity)
+        : [...prev.amenities, amenity]
+    }));
   };
 
-  // Logic to update time for points
-  const handlePointTimeChange = (type, index, time) => {
-    const updatedPoints = [...bus[type]];
-    updatedPoints[index].time = time;
-    setBus({ ...bus, [type]: updatedPoints });
+  const addManualPoint = (type) => {
+    setBus(prev => ({
+      ...prev,
+      [type]: [...prev[type], { location: "", time: "" }]
+    }));
+  };
+
+  const handlePointChange = (type, index, field, value) => {
+    setBus(prev => {
+      const updatedPoints = [...prev[type]];
+      updatedPoints[index] = { ...updatedPoints[index], [field]: value };
+      return { ...prev, [type]: updatedPoints };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -93,7 +138,7 @@ export default function AdminDashboard() {
     }
 
     setLoading(true);
-    const url = editData ? `http://localhost:5000/api/bus/update/${editData._id}` : "http://localhost:5000/api/bus/add";
+    const url = editData ? `http://localhost:5000/api/admin/update-bus/${editData._id}` : "http://localhost:5000/api/admin/add-bus";
     const method = editData ? "PUT" : "POST";
 
     try {
@@ -102,6 +147,7 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bus),
       });
+      
       if (res.ok) {
         alert(editData ? "Bus Updated!" : "Bus Added!");
         navigate("/manage-bus");
@@ -126,16 +172,16 @@ export default function AdminDashboard() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Bus Name</label>
-            <input type="text" className="p-3 border rounded-lg outline-none" value={bus.busName} onChange={e => setBus({...bus, busName: e.target.value})} required />
+            <input type="text" className="p-3 border rounded-lg" value={bus.busName} onChange={e => setBus({...bus, busName: e.target.value})} required />
           </div>
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Bus Number</label>
-            <input type="text" className="p-3 border rounded-lg outline-none" value={bus.busNumber} onChange={e => setBus({...bus, busNumber: e.target.value})} required />
+            <input type="text" className="p-3 border rounded-lg" value={bus.busNumber} onChange={e => setBus({...bus, busNumber: e.target.value})} required />
           </div>
 
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Comfort Type</label>
-            <select className="p-3 border rounded-lg bg-white" value={bus.comfortType} onChange={e => setBus({...bus, comfortType: e.target.value})}>
+            <select className="p-3 border rounded-lg" value={bus.comfortType} onChange={e => setBus({...bus, comfortType: e.target.value})}>
               <option value="AC">AC</option>
               <option value="Non-AC">Non-AC</option>
             </select>
@@ -143,7 +189,7 @@ export default function AdminDashboard() {
 
           <div className="flex flex-col">
             <label className="text-sm font-semibold text-gray-600 mb-1">Seat Type</label>
-            <select className="p-3 border rounded-lg bg-white" value={bus.seatType} onChange={e => setBus({...bus, seatType: e.target.value})}>
+            <select className="p-3 border rounded-lg" value={bus.seatType} onChange={e => setBus({...bus, seatType: e.target.value})}>
               <option value="Seater">Seater</option>
               <option value="Sleeper">Sleeper</option>
               <option value="Semi-Sleeper">Semi-Sleeper</option>
@@ -153,36 +199,78 @@ export default function AdminDashboard() {
           {/* Source & Destination */}
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
             <label className="text-xs font-bold text-blue-600 uppercase">From (Source)</label>
-            <input type="text" placeholder="City" className="p-3 border rounded-lg" value={bus.source} onChange={e => setBus({...bus, source: e.target.value})} required />
-            {/* Added manual onChange for sourceState */}
-            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm" value={bus.sourceState} onChange={e => setBus({...bus, sourceState: e.target.value})} required />
+            <input 
+              type="text" 
+              placeholder="City Name" 
+              className="p-3 border rounded-lg" 
+              value={bus.source} 
+              onChange={e => handleCityInput(e.target.value, "source")}
+              required 
+            />
+            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm bg-white" value={bus.sourceState} onChange={e => setBus({...bus, sourceState: e.target.value})} required />
           </div>
 
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg">
             <label className="text-xs font-bold text-blue-600 uppercase">To (Destination)</label>
-            <input type="text" placeholder="City" className="p-3 border rounded-lg" value={bus.destination} onChange={e => setBus({...bus, destination: e.target.value})} required />
-            {/* Added manual onChange for destinationState */}
-            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm" value={bus.destinationState} onChange={e => setBus({...bus, destinationState: e.target.value})} required />
+            <input 
+              type="text" 
+              placeholder="City Name" 
+              className="p-3 border rounded-lg" 
+              value={bus.destination} 
+              onChange={e => handleCityInput(e.target.value, "destination")}
+              required 
+            />
+            <input type="text" placeholder="State" className="p-2 border rounded-lg text-sm bg-white" value={bus.destinationState} onChange={e => setBus({...bus, destinationState: e.target.value})} required />
           </div>
 
-          {/* BOARDING POINTS WITH TIME */}
           <div className="md:col-span-1 bg-green-50 p-4 rounded-xl border border-green-100">
-            <label className="text-xs font-bold text-green-700 uppercase mb-2 block">Boarding Points & Time</label>
+            <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-green-700 uppercase">Boarding Points</label>
+                <button type="button" onClick={() => addManualPoint("boardingPoints")} className="text-[10px] bg-green-600 text-white px-2 py-1 rounded">+ Add</button>
+            </div>
             {bus.boardingPoints.map((point, idx) => (
-              <div key={idx} className="flex items-center gap-2 mb-2">
-                <span className="text-xs flex-1 truncate">{point.location}</span>
-                <input type="time" className="p-1 text-xs border rounded" value={point.time} onChange={(e) => handlePointTimeChange("boardingPoints", idx, e.target.value)} />
+              <div key={idx} className="flex flex-col gap-1 mb-3 bg-white p-2 rounded shadow-sm">
+                <input 
+                  type="text" 
+                  placeholder="Location"
+                  className="p-1 text-xs border rounded mb-1"
+                  value={point.location}
+                  onChange={(e) => handlePointChange("boardingPoints", idx, "location", e.target.value)}
+                  required
+                />
+                <input 
+                  type="time" 
+                  className="p-1 text-xs border rounded outline-blue-500" 
+                  value={point.time} 
+                  onChange={(e) => handlePointChange("boardingPoints", idx, "time", e.target.value)} 
+                  required 
+                />
               </div>
             ))}
           </div>
 
-          {/* DROPPING POINTS WITH TIME */}
           <div className="md:col-span-1 bg-red-50 p-4 rounded-xl border border-red-100">
-            <label className="text-xs font-bold text-red-700 uppercase mb-2 block">Dropping Points & Time</label>
+            <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-red-700 uppercase">Dropping Points</label>
+                <button type="button" onClick={() => addManualPoint("droppingPoints")} className="text-[10px] bg-red-600 text-white px-2 py-1 rounded">+ Add</button>
+            </div>
             {bus.droppingPoints.map((point, idx) => (
-              <div key={idx} className="flex items-center gap-2 mb-2">
-                <span className="text-xs flex-1 truncate">{point.location}</span>
-                <input type="time" className="p-1 text-xs border rounded" value={point.time} onChange={(e) => handlePointTimeChange("droppingPoints", idx, e.target.value)} />
+              <div key={idx} className="flex flex-col gap-1 mb-3 bg-white p-2 rounded shadow-sm">
+                <input 
+                  type="text" 
+                  placeholder="Location"
+                  className="p-1 text-xs border rounded mb-1"
+                  value={point.location}
+                  onChange={(e) => handlePointChange("droppingPoints", idx, "location", e.target.value)}
+                  required
+                />
+                <input 
+                  type="time" 
+                  className="p-1 text-xs border rounded outline-blue-500" 
+                  value={point.time} 
+                  onChange={(e) => handlePointChange("droppingPoints", idx, "time", e.target.value)} 
+                  required 
+                />
               </div>
             ))}
           </div>
@@ -193,49 +281,40 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600">Available Seats</label>
+            <label className="text-sm font-semibold text-gray-600">Total Seats</label>
             <input type="number" className="p-3 border rounded-lg" value={bus.availableSeats} onChange={e => setBus({...bus, availableSeats: e.target.value})} required />
           </div>
 
           {/* Time */}
           <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600">Departure Time</label>
+            <label className="text-sm font-semibold text-gray-600">Full Trip Departure</label>
             <input type="time" className="p-3 border rounded-lg" value={bus.departureTime} onChange={e => setBus({...bus, departureTime: e.target.value})} required />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-sm font-semibold text-gray-600">Arrival Time</label>
+            <label className="text-sm font-semibold text-gray-600">Full Trip Arrival</label>
             <input type="time" className="p-3 border rounded-lg" value={bus.arrivalTime} onChange={e => setBus({...bus, arrivalTime: e.target.value})} required />
           </div>
 
-          <div className="md:col-span-2 bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center">
-            <label className="text-sm font-bold text-blue-900 mb-3 block uppercase tracking-wider">Schedule Days</label>
+          <div className="md:col-span-2 bg-blue-50 p-5 rounded-2xl text-center">
+            <label className="text-sm font-bold text-blue-900 mb-3 block uppercase">Schedule Days</label>
             <div className="flex flex-wrap justify-center gap-2">
               {daysOfWeek.map((day) => (
                 <button key={day} type="button" onClick={() => handleDayChange(day)}
-                  className={`px-5 py-2 rounded-xl font-bold border-2 ${bus.availableDays.includes(day) ? "bg-blue-600 text-white" : "bg-white text-gray-400"}`}>
+                  className={`px-4 py-2 rounded-xl font-bold border-2 transition-colors ${bus.availableDays?.includes(day) ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-400 border-gray-200"}`}>
                   {day}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* AMENITIES SECTION */}
           <div className="md:col-span-2 bg-gray-50 p-5 rounded-2xl border border-gray-200">
-            <label className="text-sm font-bold text-gray-700 mb-3 block uppercase tracking-wider">Amenities Provided</label>
+            <label className="text-sm font-bold text-gray-700 mb-3 block uppercase">Amenities</label>
             <div className="flex flex-wrap gap-2">
               {amenityOptions.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => handleAmenityChange(item)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-                    bus.amenities.includes(item)
-                      ? "bg-green-600 text-white border-green-600 shadow-md"
-                      : "bg-white text-gray-500 border-gray-300 hover:border-green-400"
-                  }`}
-                >
-                  {bus.amenities.includes(item) ? "✓ " : "+ "} {item}
+                <button key={item} type="button" onClick={() => handleAmenityChange(item)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold border transition-all ${bus.amenities?.includes(item) ? "bg-green-600 text-white border-green-600 shadow-md" : "bg-white text-gray-500 border-gray-300"}`}>
+                  {bus.amenities?.includes(item) ? "✓ " : "+ "} {item}
                 </button>
               ))}
             </div>
@@ -244,11 +323,7 @@ export default function AdminDashboard() {
           <button 
             type="submit" 
             disabled={loading}
-            className={`md:col-span-2 py-4 mt-4 rounded-2xl text-white font-black text-xl transition-all shadow-xl ${
-              loading 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-blue-200'
-            }`}
+            className={`md:col-span-2 py-4 mt-4 rounded-2xl text-white font-black text-xl shadow-xl transition-all ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'}`}
           >
             {loading ? "Saving..." : (editData ? "Update Bus" : "Add Bus to Fleet")}
           </button>
