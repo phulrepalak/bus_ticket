@@ -33,7 +33,6 @@ function App() {
         <Route path="/otp" element={<OTPPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/account-created" element={<AccountCreated />} />
-        <Route path="/profile" element={<CompleteProfile />} />
         <Route path="/select-seat/:busId" element={<SelectSeat />} />
 
         {/* --- ADMIN ONLY ROUTES --- */}
