@@ -1,30 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
+import axios from "axios"; // API call ke liye
 
 export default function SelectSeat() {
   const { busId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { bus, date } = location.state || {};
+
+  const { bus: initialBus, date, boardingFilter, droppingFilter } = location.state || {};
 
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [bookedSeats, setBookedSeats] = useState(["5", "L2", "U1"]); // Mock Data
+  const [bookedSeats, setBookedSeats] = useState([]); // Database se aayengi
+  const [bus, setBus] = useState(initialBus);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchBookedSeats = async () => {
+      try {
+        setLoading(true);
+        
+        let formattedDate = "";
+        if (date) {
+          formattedDate = String(date).split('T')[0]; 
+        }
+
+        console.log("Requesting seats for clean date:", formattedDate);
+
+        const response = await axios.get(`http://localhost:5000/api/bus/${busId}?date=${formattedDate}`);
+        
+        if (response.data) {
+          // Force strings and remove spaces taaki comparison fail na ho
+          const seatsFromDB = (response.data.bookedSeats || []).map(s => String(s).trim());
+          setBookedSeats(seatsFromDB);
+          if (!bus) setBus(response.data.bus);
+        }
+      } catch (error) {
+        console.error("Seat status fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (busId && date) {
+      fetchBookedSeats();
+    }
+  }, [busId, date]);
 
   const handleSeatClick = (seatId) => {
-    if (bookedSeats.includes(seatId)) return;
+    // Robust matching logic check
+    const isAlreadyBooked = bookedSeats.some(s => s === String(seatId).trim());
+    if (isAlreadyBooked) return;
+    
     setSelectedSeats((prev) =>
-      prev.includes(seatId) ? prev.filter((s) => s !== seatId) : [...prev, seatId]
+      prev.includes(seatId)
+        ? prev.filter((s) => s !== seatId)
+        : [...prev, seatId]
     );
   };
 
-  // --- PREMIUM SEAT COMPONENT ---
+  // --- SEAT COMPONENT ---
   const Seat = ({ id, type }) => {
-    const isBooked = bookedSeats.includes(id);
+    // Robust comparison logic
+    const isBooked = bookedSeats.some(s => s === String(id).trim());
     const isSelected = selectedSeats.includes(id);
 
     let sizeClass = type === "Sleeper" ? "w-16 h-8" : "w-10 h-10";
     let baseClass = `relative transition-all duration-200 cursor-pointer rounded-md border-[1.2px] flex flex-col items-center justify-center font-bold ${sizeClass} `;
-    
+
     if (isBooked) {
       baseClass += "bg-slate-400 border-slate-500 text-white cursor-not-allowed opacity-90";
     } else if (isSelected) {
@@ -34,18 +76,23 @@ export default function SelectSeat() {
     }
 
     return (
-      <div onClick={() => handleSeatClick(id)} className={baseClass}>
-        {!isBooked && !isSelected && <span className="text-[7.5px] text-slate-300 font-medium">₹{bus?.price}</span>}
-        
+      <div 
+        onClick={() => !isBooked && handleSeatClick(id)} 
+        className={baseClass}
+      >
+        {!isBooked && !isSelected && (
+          <span className="text-[7.5px] text-slate-300 font-medium">₹{bus?.price}</span>
+        )}
         {isSelected && (
           <div className="absolute -top-8 bg-slate-900 text-white text-[9px] py-1 px-2 rounded shadow-xl flex items-center gap-1 z-30">
-             <span className="font-bold">{id}</span>
-             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-900 rotate-45"></div>
+            <span className="font-bold">{id}</span>
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-900 rotate-45"></div>
           </div>
         )}
-
         <span className={isSelected ? "text-white text-[10px]" : "text-[10px]"}>{id}</span>
-        {!isBooked && !isSelected && <div className="absolute bottom-1 w-5 h-0.5 bg-slate-100 rounded-full"></div>}
+        {!isBooked && !isSelected && (
+          <div className="absolute bottom-1 w-5 h-0.5 bg-slate-100 rounded-full"></div>
+        )}
       </div>
     );
   };
@@ -153,60 +200,65 @@ export default function SelectSeat() {
     return <SeaterOnly />;
   };
 
+  if (!bus && loading) return <div className="p-20 text-center font-black uppercase italic tracking-widest text-slate-300">Synchronizing Seats...</div>;
+
   return (
     <div className="min-h-screen bg-slate-50 p-2 md:p-6 flex justify-center items-start text-left">
       <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* LEFT PANEL */}
         <div className="lg:col-span-7 bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative">
           <div className="mb-6 flex justify-between items-center px-2">
             <div>
               <h2 className="text-2xl font-black text-slate-800 tracking-tighter uppercase">Select Seat</h2>
-              {/* ADDED SEAT TYPE BADGE HERE */}
               <div className="flex items-center gap-2 mt-1">
                 <span className="bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded border border-blue-100 uppercase tracking-widest">{bus?.seatType}</span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{bus?.source} → {bus?.destination}</span>
               </div>
             </div>
             <div className="flex gap-3 items-center">
-               <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-tighter"><div className="w-3 h-3 bg-white border border-slate-200 rounded-sm"></div> Avail.</div>
-               <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-tighter"><div className="w-3 h-3 bg-slate-400 rounded-sm"></div> Booked</div>
-               <div className="flex items-center gap-1.5 text-[9px] font-bold text-sky-600 uppercase tracking-tighter"><div className="w-3 h-3 bg-sky-500 rounded-sm"></div> Selected</div>
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                <div className="w-3 h-3 bg-white border border-slate-200 rounded-sm"></div> Avail.
+              </div>
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                <div className="w-3 h-3 bg-slate-400 rounded-sm"></div> Booked
+              </div>
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-sky-600 uppercase tracking-tighter">
+                <div className="w-3 h-3 bg-sky-500 rounded-sm"></div> Selected
+              </div>
             </div>
           </div>
-
           <div className="relative bg-[#FAFBFC] rounded-2xl py-8 px-4 border border-slate-50 flex flex-col items-center">
             <BusLayout />
           </div>
         </div>
 
-        {/* RIGHT PANEL: FULL TICKET FORM */}
+        {/* RIGHT PANEL */}
         <div className="lg:col-span-5 sticky top-6">
           <div className="bg-white rounded-[2rem] p-8 text-slate-800 shadow-2xl border border-slate-100">
             <h3 className="text-xl font-black text-slate-800 border-b border-slate-50 pb-4 mb-6 tracking-widest uppercase">Booking Details</h3>
-            
             <div className="space-y-4">
               <div className="flex justify-between items-center text-[13px]">
                 <p className="font-bold text-slate-400 uppercase tracking-widest">Operator</p>
                 <p className="font-black text-slate-800 uppercase tracking-tighter">{bus?.busName}</p>
               </div>
-
               <div className="flex justify-between items-center text-[13px]">
                 <p className="font-bold text-slate-400 uppercase tracking-widest">Route</p>
                 <p className="font-black text-slate-800 capitalize tracking-tighter">{bus?.source} → {bus?.destination}</p>
               </div>
-
               <div className="flex justify-between items-center text-[13px]">
                 <p className="font-bold text-slate-400 uppercase tracking-widest">Departure</p>
                 <p className="font-black text-slate-800 tracking-tighter">{date} | {bus?.departureTime}</p>
               </div>
-              
-              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 my-4 shadow-inner">
+
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 my-4 shadow-inner min-h-[80px]">
                 <p className="text-[9px] font-black text-slate-400 uppercase mb-2 tracking-widest">Your Selection</p>
-                <div className="flex flex-wrap gap-2 min-h-[25px]">
-                  {selectedSeats.length > 0 ? selectedSeats.map(s => (
-                    <span key={s} className="bg-sky-100 text-blue-900 px-3 py-0.5 rounded text-[10px] font-black border border-sky-200 uppercase tracking-tighter">Seat {s}</span>
-                  )) : <span className="text-slate-400 text-[11px] italic font-medium tracking-tight">Please pick a seat to proceed...</span>}
+                <div className="flex flex-wrap gap-2">
+                  {selectedSeats.length > 0 ? (
+                    selectedSeats.map((s) => (
+                      <span key={s} className="bg-sky-100 text-blue-900 px-3 py-0.5 rounded text-[10px] font-black border border-sky-200 uppercase tracking-tighter">Seat {s}</span>
+                    ))
+                  ) : (
+                    <span className="text-slate-400 text-[11px] italic font-medium tracking-tight">Please pick a seat to proceed...</span>
+                  )}
                 </div>
               </div>
 
@@ -215,11 +267,24 @@ export default function SelectSeat() {
                   <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest leading-none">Total Fare</p>
                   <p className="text-3xl font-black text-blue-900 leading-none mt-2">₹{(selectedSeats.length * (bus?.price || 0)).toLocaleString()}</p>
                 </div>
-                <button 
-                  disabled={selectedSeats.length === 0} 
-                  onClick={() => navigate("/checkout", { state: { selectedSeats, bus, date, total: selectedSeats.length * bus.price } })} 
+                <button
+                  disabled={selectedSeats.length === 0}
+                  onClick={() =>
+                    navigate("/checkout", {
+                      state: {
+                        selectedSeats,
+                        bus,
+                        date,
+                        boardingFilter: boardingFilter || [],
+                        droppingFilter: droppingFilter || [],
+                        total: selectedSeats.length * (bus?.price || 0),
+                      },
+                    })
+                  }
                   className={`px-8 py-3 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
-                    selectedSeats.length === 0 ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none" : "bg-sky-500 text-white hover:bg-sky-600 shadow-sky-100"
+                    selectedSeats.length === 0
+                      ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                      : "bg-sky-500 text-white hover:bg-sky-600 shadow-sky-100"
                   }`}
                 >
                   Continue →
@@ -228,7 +293,6 @@ export default function SelectSeat() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
