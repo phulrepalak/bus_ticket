@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import axios from "axios"; // API call ke liye
+import axios from "axios";
 
 export default function SelectSeat() {
   const { busId } = useParams();
@@ -10,7 +10,7 @@ export default function SelectSeat() {
   const { bus: initialBus, date, boardingFilter, droppingFilter } = location.state || {};
 
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [bookedSeats, setBookedSeats] = useState([]); // Database se aayengi
+  const [bookedSeats, setBookedSeats] = useState([]); 
   const [bus, setBus] = useState(initialBus);
   const [loading, setLoading] = useState(true);
   
@@ -18,21 +18,19 @@ export default function SelectSeat() {
     const fetchBookedSeats = async () => {
       try {
         setLoading(true);
-        
         let formattedDate = "";
         if (date) {
           formattedDate = String(date).split('T')[0]; 
         }
 
-        console.log("Requesting seats for clean date:", formattedDate);
-
+        // Backend call to get the latest bus data (including bookedSeats)
         const response = await axios.get(`http://localhost:5000/api/bus/${busId}?date=${formattedDate}`);
         
         if (response.data) {
-          // Force strings and remove spaces taaki comparison fail na ho
+          // Database se aane wali seats ko strings mein convert karke store karna
           const seatsFromDB = (response.data.bookedSeats || []).map(s => String(s).trim());
           setBookedSeats(seatsFromDB);
-          if (!bus) setBus(response.data.bus);
+          if (!bus) setBus(response.data.bus || response.data);
         }
       } catch (error) {
         console.error("Seat status fetch error:", error);
@@ -41,14 +39,14 @@ export default function SelectSeat() {
       }
     };
 
-    if (busId && date) {
+    if (busId) {
       fetchBookedSeats();
     }
   }, [busId, date]);
 
   const handleSeatClick = (seatId) => {
-    // Robust matching logic check
-    const isAlreadyBooked = bookedSeats.some(s => s === String(seatId).trim());
+    // Check if seat is already in bookedSeats list
+    const isAlreadyBooked = bookedSeats.includes(String(seatId).trim());
     if (isAlreadyBooked) return;
     
     setSelectedSeats((prev) =>
@@ -60,8 +58,7 @@ export default function SelectSeat() {
 
   // --- SEAT COMPONENT ---
   const Seat = ({ id, type }) => {
-    // Robust comparison logic
-    const isBooked = bookedSeats.some(s => s === String(id).trim());
+    const isBooked = bookedSeats.includes(String(id).trim());
     const isSelected = selectedSeats.includes(id);
 
     let sizeClass = type === "Sleeper" ? "w-16 h-8" : "w-10 h-10";
