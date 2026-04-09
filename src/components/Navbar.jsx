@@ -49,9 +49,9 @@ const Navbar = () => {
           </>
         )}
 
-        {/* --- CASE 3: GUEST USER (Bina login ke ticket book karne ke baad) --- */}
+        {/* --- CASE 3: GUEST USER  --- */}
         {!token && isGuest === "true" && (
-          <Link to="/track-booking" className="text-orange-600 font-bold hover:text-orange-700 underline underline-offset-4">
+          <Link to="/track-booking" className="hover:text-blue-600 transition-colors">
             Track Booking
           </Link>
         )}
