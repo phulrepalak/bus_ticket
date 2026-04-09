@@ -1,9 +1,9 @@
 import Booking from "../models/Booking.js";
+import Bus from "../models/Bus.js";
 
-// --- 1. NEW BOOKING CREATE KARNE KA LOGIC ---
+// --- 1. NEW BOOKING CREATE KARNE KA LOGIC (With Seat Reservation) ---
 export const createBooking = async (req, res) => {
   try {
-    // Frontend se saara data nikalna
     const { 
       busId, 
       seats, 
@@ -25,19 +25,25 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // 2. Universal Data Handling: 
-    // Har seat ko String mein badal do taaki "1" aur "L1" dono save ho sakein
-    const formattedSeats = seats.map(s => String(s));
+    // 1. Check if bus exists and seats are available
+    const bus = await Bus.findById(busId);
+    if (!bus) return res.status(404).json({ message: "Bus not found" });
 
-    // Passenger details ke andar bhi seat number ko String bana do
+    const formattedSeats = seats.map(s => String(s));
+    const isAlreadyBooked = formattedSeats.some(seat => bus.bookedSeats.includes(seat));
+
+    if (isAlreadyBooked) {
+      return res.status(400).json({ message: "One or more selected seats are already booked" });
+    }
+
     const formattedPassengerDetails = passengerDetails.map(p => ({
       ...p,
       seat: String(p.seat)
     }));
 
-    // 3. New Booking Object banana
+    // 2. Create and Save Booking
     const newBooking = new Booking({
-      bus: busId, // Model mein field ka naam 'bus' hai
+      bus: busId, 
       seats: formattedSeats,
       passengerDetails: formattedPassengerDetails,
       totalAmount,
@@ -50,39 +56,25 @@ export const createBooking = async (req, res) => {
       isGuest: isGuest || false
     });
 
-    // 4. Database mein save karna
     const savedBooking = await newBooking.save();
 
-    // 5. Success Response
-    res.status(201).json({ 
-      success: true, 
-      message: "Booking successful!", 
-      ticket: savedBooking 
-    });
+    // 3. Update Bus model to reserve these seats
+    bus.bookedSeats.push(...formattedSeats);
+    await bus.save();
 
+    res.status(201).json({ success: true, message: "Booking successful!", ticket: savedBooking });
   } catch (error) {
-    // Terminal mein detail error dekhne ke liye
     console.error("DETAILED BOOKING ERROR:", error);
-    
-    res.status(400).json({ 
-      message: "Booking validation failed", 
-      error: error.message 
-    });
+    res.status(400).json({ message: "Booking validation failed", error: error.message });
   }
 };
 
-// --- 2. GUEST USER KE LIYE BOOKING TRACK KARNE KA LOGIC (Phone Number Based) ---
+// --- 2. GUEST USER KE LIYE BOOKING TRACK KARNE KA LOGIC ---
 export const trackBooking = async (req, res) => {
   try {
     const { phone } = req.body;
+    if (!phone) return res.status(400).json({ message: "Phone number is required" });
 
-    // Validation for phone number input
-    if (!phone) {
-      return res.status(400).json({ message: "Phone number is required" });
-    }
-
-    // Is phone number se linked saari bookings dhoondo (latest pehle dikhegi)
-    // .trim() use kiya hai taaki extra space se error na aaye
     const bookings = await Booking.find({ "contact.phone": String(phone).trim() })
       .populate("bus")
       .sort({ createdAt: -1 }); 
@@ -90,12 +82,87 @@ export const trackBooking = async (req, res) => {
     if (!bookings || bookings.length === 0) {
       return res.status(404).json({ message: "No bookings found for this number." });
     }
-
-    // Success response with array of bookings
     res.status(200).json({ success: true, bookings });
   } catch (error) {
-    // Agar server error aaye toh terminal mein check karein
-    console.error("TRACKING ERROR:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// --- 3. GET LOGGED-IN USER BOOKINGS ---
+export const getMyBookings = async (req, res) => {
+  try {
+    const { phone } = req.query; 
+    if (!phone) return res.status(400).json({ message: "Phone number is required" });
+
+    const bookings = await Booking.find({ "contact.phone": phone })
+      .populate("bus")
+      .sort({ journeyDate: -1 });
+
+    const today = new Date().toISOString().split('T')[0];
+    const upcoming = bookings.filter(b => b.journeyDate >= today && b.paymentStatus === "Completed");
+    const past = bookings.filter(b => b.journeyDate < today && b.paymentStatus === "Completed");
+    const cancelled = bookings.filter(b => b.paymentStatus === "Cancelled");
+
+    res.status(200).json({ success: true, upcoming, past, cancelled });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching bookings", error: error.message });
+  }
+};
+
+// --- 4. GET ACTIVITY STATS ---
+export const getActivityStats = async (req, res) => {
+  try {
+    const { phone } = req.query;
+    if (!phone) return res.status(400).json({ message: "Phone number is required" });
+
+    const bookings = await Booking.find({ "contact.phone": phone, paymentStatus: "Completed" });
+
+    const totalTrips = bookings.length;
+    const totalSpent = bookings.reduce((sum, b) => sum + b.totalAmount, 0);
+    const uniqueCities = [...new Set(bookings.map(b => b.droppingPoint))].length;
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalTrips,
+        totalSpent,
+        uniqueCities,
+        memberSince: bookings.length > 0 ? bookings[0].createdAt : new Date()
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching activity stats", error: error.message });
+  }
+};
+
+// --- 5. CANCEL BOOKING LOGIC (With Seat Release) ---
+export const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await Booking.findById(id);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    if (booking.paymentStatus === "Cancelled") {
+      return res.status(400).json({ message: "Booking is already cancelled" });
+    }
+
+    // Release seats from the Bus model
+    if (booking.bus) {
+      const bus = await Bus.findById(booking.bus);
+      if (bus && Array.isArray(bus.bookedSeats)) {
+        const seatsToCancel = booking.seats.map(s => String(s));
+        bus.bookedSeats = bus.bookedSeats.filter(s => !seatsToCancel.includes(String(s)));
+        await bus.save();
+      }
+    }
+
+    booking.paymentStatus = "Cancelled";
+    await booking.save();
+
+    res.status(200).json({ success: true, message: "Booking cancelled and seats released" });
+  } catch (error) {
+    console.error("CANCELLATION ERROR:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
