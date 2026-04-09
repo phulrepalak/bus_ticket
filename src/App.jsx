@@ -13,12 +13,14 @@ import AccountCreated from "./pages/AccountCreated";
 import CompleteProfile from "./pages/CompleteProfile";
 import ManageBus from "./pages/ManageBus";
 import SelectSeat from "./pages/SelectSeat";
-import Profile from "./pages/Profile"
+import Profile from "./pages/Profile";
+import Checkout from "./pages/Checkout"; 
+import Payment from "./pages/Payment"; 
+import TicketConfirmation from "./pages/TicketConfirmation"; 
+import TrackBooking from "./pages/TrackBooking";
 
 // Admin Pages
-import AdminDashboard from "./pages/AdminDashboard"; // Isme Add Bus ka form hai
-// import ManageBus from "./pages/ManageBus";           // Future page for edit/delete
-// import ViewBookings from "./pages/ViewBookings";     // Future page to see all tickets
+import AdminDashboard from "./pages/AdminDashboard"; 
 
 function App() {
   return (
@@ -33,26 +35,25 @@ function App() {
         <Route path="/otp" element={<OTPPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/account-created" element={<AccountCreated />} />
-        <Route path="/profile" element={<CompleteProfile />} />
-        <Route path="/select-seat/:busId" element={<SelectSeat />} />
-
-        {/* --- ADMIN ONLY ROUTES --- */}
-        {/* Jab Navbar mein 'Add Bus' click hoga toh ye khulega */}
-        <Route path="/admin" element={<AdminDashboard />} /> 
+        <Route path="/track-booking" element={<TrackBooking />} />
         
-        {/* Manage Bus page ka path */}
-        <Route path="/manage-bus" element={<ManageBus />} />
-        
-        {/* Saari bookings dekhne ka path */}
-        {/* <Route path="/view-bookings" element={<ViewBookings />} /> */}
-
-        {/* Naya Display Page yahan hona chahiye */}
+        {/* Profile Routes */}
         <Route path="/profile" element={<Profile />} />  
-        
-        {/* Form wala page alag path par rakhein */}
         <Route path="/complete-profile" element={<CompleteProfile />} />      
 
-        {/* --- REDIRECTS --- */}
+        {/* --- BOOKING FLOW ROUTES --- */}
+        <Route path="/select-seat/:busId" element={<SelectSeat />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/payment" element={<Payment />} />
+        
+        {/* Payment ke baad isi page par user redirect hoga */}
+        <Route path="/ticket-confirmation" element={<TicketConfirmation />} />
+
+        {/* --- ADMIN ONLY ROUTES --- */}
+        <Route path="/admin" element={<AdminDashboard />} /> 
+        <Route path="/manage-bus" element={<ManageBus />} />
+        
+    
         <Route path="*" element={<Navigate to="/" />} />
        
       </Routes>
@@ -60,4 +61,4 @@ function App() {
   );
 }
 
-export default App;   
+export default App;
