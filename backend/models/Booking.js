@@ -53,7 +53,7 @@ const bookingSchema = new mongoose.Schema({
   paymentStatus: {
     type: String,
     default: "Pending",
-    enum: ["Pending", "Completed", "Failed"],
+    enum: ["Pending", "Completed", "Failed", "Cancelled"],
   },
   // User Type (Guest hai ya Logged-in)
   isGuest: {
