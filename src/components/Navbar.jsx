@@ -44,7 +44,7 @@ const Navbar = () => {
         {/* --- CASE 2: REGISTERED USER LOGGED IN --- */}
         {token && userRole === "user" && (
           <>
-            <Link to="/bookings" className="hover:text-blue-600 transition-colors">My Booking</Link>
+            <Link to="/my-bookings" className="hover:text-blue-600 transition-colors">My Booking</Link>
             <Link to="/activity" className="hover:text-blue-600 transition-colors">Activity</Link>
           </>
         )}
