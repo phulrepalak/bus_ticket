@@ -34,7 +34,7 @@ export default function CompleteProfile() {
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/complete-profile", {
-        method: "PUT",
+        method: "POST", 
         headers: {
           "Content-Type": "application/json",
           "Authorization": token, // Backend middleware decoded user id yahan se nikalega
@@ -47,8 +47,10 @@ export default function CompleteProfile() {
       if (response.ok) {
         alert("Profile created successfully!");
         navigate("/home");
+        window.location.reload(); 
       } else {
-        alert(data.message || "Update failed");
+        // 3. ERROR: Backend ne mana kar diya
+        alert(data.message || "Update failed. Please try again.");
       }
     } catch (error) {
       console.error("Profile Update Error:", error);
@@ -63,7 +65,7 @@ export default function CompleteProfile() {
         {/* Left Side */}
         <div className="p-8 flex flex-col justify-center">
           <h2 className="text-3xl font-bold text-gray-800">
-            Personalize your journey with GoBus
+            Personalize your journey with <span className="text-blue-600">GoBus</span>
           </h2>
           <p className="text-gray-500 mt-3">
             Help us tailor your GoBus experience. Your details ensure
@@ -102,25 +104,26 @@ export default function CompleteProfile() {
               <input
                 type="email"
                 name="email"
+                required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter email"
-                className="w-full mt-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="example@gobus.com"
+                className="w-full mt-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="text-sm text-gray-600">Gender</label>
+              <label className="text-sm font-medium text-gray-600">Gender</label>
               <div className="flex gap-3 mt-2">
                 {["Male", "Female", "Other"].map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => setFormData({ ...formData, gender: g })}
-                    className={`flex-1 border py-2 rounded-lg transition ${
+                    className={`flex-1 py-2 rounded-lg font-semibold border transition-all ${
                       formData.gender === g
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-gray-700 hover:bg-blue-50"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white text-gray-600 hover:bg-blue-50"
                     }`}
                   >
                     {g}
@@ -131,7 +134,7 @@ export default function CompleteProfile() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg mt-4 hover:bg-blue-700 transition"
+              className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-95"
             >
               Submit
             </button>
