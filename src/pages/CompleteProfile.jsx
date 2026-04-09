@@ -21,12 +21,6 @@ export default function CompleteProfile() {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    const handleSkip = () => {
-  const phone = localStorage.getItem("tempPhone") || ""; // Login/OTP ke waqt save kiya gaya phone
-  localStorage.setItem("user", JSON.stringify({ phone: phone, email: "" })); 
-  navigate("/"); 
-};
-
     if (!formData.fullName || !formData.email || !formData.gender) {
       alert("Please fill all details");
       return;
@@ -34,10 +28,10 @@ export default function CompleteProfile() {
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/complete-profile", {
-        method: "POST", 
+        method: "PUT", // Matches the PUT route in authRoutes.js
         headers: {
           "Content-Type": "application/json",
-          "Authorization": token, // Backend middleware decoded user id yahan se nikalega
+          "Authorization": `Bearer ${token}`, // Added Bearer prefix for middleware compatibility
         },
         body: JSON.stringify(formData),
       });
@@ -49,13 +43,20 @@ export default function CompleteProfile() {
         navigate("/home");
         window.location.reload(); 
       } else {
-        // 3. ERROR: Backend ne mana kar diya
+        // ERROR: Backend rejected the request
         alert(data.message || "Update failed. Please try again.");
       }
     } catch (error) {
       console.error("Profile Update Error:", error);
       alert("Server error, please try again.");
     }
+  };
+
+  // Added handleSkip for the "Skip for now" functionality
+  const handleSkip = () => {
+    const phone = localStorage.getItem("tempPhone") || "";
+    localStorage.setItem("user", JSON.stringify({ phone: phone, email: "" })); 
+    navigate("/"); 
   };
 
   return (
@@ -104,7 +105,6 @@ export default function CompleteProfile() {
               <input
                 type="email"
                 name="email"
-                required
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="example@gobus.com"
@@ -140,7 +140,7 @@ export default function CompleteProfile() {
             </button>
 
             <p
-              onClick={() => navigate("/home")}
+              onClick={handleSkip}
               className="text-sm text-center text-gray-500 cursor-pointer hover:text-blue-600 mt-3"
             >
               Skip for now
