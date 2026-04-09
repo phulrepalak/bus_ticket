@@ -1,12 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import Razorpay from "razorpay"; // Import format sahi kiya
 import connectDB from "./config/db.js";
 
 // Routes Imports
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import busRoutes from "./routes/busRoutes.js"; // <--- Naya Import
+import busRoutes from "./routes/busRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 
 // Load Environment Variables
 dotenv.config();
@@ -16,26 +18,43 @@ connectDB();
 
 const app = express();
 
-// --- MIDDLEWARES ---
+// --- RAZORPAY INSTANCE ---
+const instance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
+// --- MIDDLEWARES ---
 app.use(cors({
   origin: "http://localhost:5173", 
   credentials: true
 }));
-
-// Body Parser zaroori hai admin data read karne ke liye
 app.use(express.json());
 
+// --- RAZORPAY ORDER ROUTE ---
+// Frontend (Payment.jsx) isi URL ko call karega
+app.post("/api/payment/order", async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const options = {
+      amount: Number(amount * 100), // Rupee to Paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await instance.orders.create(options);
+    res.status(200).json(order);
+  } catch (error) {
+    console.error("Razorpay Order Error:", error);
+    res.status(500).json({ message: "Internal Server Error in Razorpay" });
+  }
+});
+
 // --- ROUTES REGISTER ---
-
-// Admin panel (Bus/City management) ke liye
 app.use("/api/admin", adminRoutes); 
-
-// Login, OTP, aur Profile functionality ke liye
 app.use("/api/auth", authRoutes);
-
-// Public Bus Search functionality ke liye (Home/Search page)
-app.use("/api/bus", busRoutes); // <--- Is line ko add kiya gaya hai
+app.use("/api/bus", busRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;

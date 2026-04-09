@@ -38,7 +38,7 @@ const busSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // --- Naye Fields: Boarding aur Dropping Points ---
+  // --- Boarding aur Dropping Points ---
   boardingPoints: [
     {
       location: { type: String, required: true },
@@ -51,7 +51,6 @@ const busSchema = new mongoose.Schema({
       time: { type: String, required: true }
     }
   ],
-  // -----------------------------------------------
   departureTime: { 
     type: String, 
     required: true 
@@ -72,6 +71,7 @@ const busSchema = new mongoose.Schema({
     type: String, 
     default: "Daily" 
   },
+  // Total seats (Capacity). Booked seats hum controller mein fetch karte hain.
   availableSeats: { 
     type: Number, 
     default: 30 
