@@ -21,6 +21,12 @@ export default function CompleteProfile() {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
+    const handleSkip = () => {
+  const phone = localStorage.getItem("tempPhone") || ""; // Login/OTP ke waqt save kiya gaya phone
+  localStorage.setItem("user", JSON.stringify({ phone: phone, email: "" })); 
+  navigate("/"); 
+};
+
     if (!formData.fullName || !formData.email || !formData.gender) {
       alert("Please fill all details");
       return;
