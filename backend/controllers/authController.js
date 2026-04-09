@@ -89,8 +89,9 @@ export const completeProfile = async (req, res) => {
       req.user.id, 
       { fullName, email, gender, isProfileComplete: true },
       { new: true }
-    );
-    res.status(200).json({ message: "Profile updated", user });
+    ).select("-otp");
+
+    res.status(200).json({ message: "Profile created successfully", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -117,16 +118,10 @@ export const updateProfile = async (req, res) => {
 // 5. Get User Profile (Details fetch karne ke liye)
 export const getProfile = async (req, res) => {
   try {
-    // req.user.id humein authMiddleware se milega
-    const user = await User.findById(req.user.id).select("-otp"); // OTP ko security ke liye hide rakhein
-    
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    const user = await User.findById(req.user.id).select("-otp"); 
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user);
   } catch (err) {
-    console.error("Profile Fetch Error:", err.message);
     res.status(500).json({ error: "Server error while fetching profile" });
   }
 };
