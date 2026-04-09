@@ -18,6 +18,8 @@ import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment"; 
 import TicketConfirmation from "./pages/TicketConfirmation"; 
 import TrackBooking from "./pages/TrackBooking";
+import MyBookings from "./pages/MyBookings";
+import Activity from "./pages/Activity";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard"; 
@@ -37,9 +39,11 @@ function App() {
         <Route path="/account-created" element={<AccountCreated />} />
         <Route path="/track-booking" element={<TrackBooking />} />
         
-        {/* Profile Routes */}
+        {/* Profile & Dashboard Routes */}
         <Route path="/profile" element={<Profile />} />  
         <Route path="/complete-profile" element={<CompleteProfile />} />      
+        <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/activity" element={<Activity />} />
 
         {/* --- BOOKING FLOW ROUTES --- */}
         <Route path="/select-seat/:busId" element={<SelectSeat />} />
