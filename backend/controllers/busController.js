@@ -31,7 +31,7 @@ export const getBusById = async (req, res) => {
     const activeBookings = await Booking.find({
       bus: id,
       journeyDate: searchDate, 
-      paymentStatus: "Completed"
+      paymentStatus: "Completed" 
     });
 
     // Debugging logs

@@ -4,6 +4,7 @@ import City from "../models/City.js";
 import { 
   addBus, 
   getAllBuses, 
+  getPopularRoutes,
   updateBus, 
   deleteBus,
   getBusById 
@@ -60,6 +61,8 @@ router.get("/search", async (req, res) => {
     res.status(500).json({ error: "Something went wrong while searching buses." });
   }
 });
+
+router.get("/popular", getPopularRoutes);
 
 // --- 2. DYNAMIC PARAMETER ROUTES (Check these last) ---
 
