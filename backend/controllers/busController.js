@@ -18,7 +18,7 @@ const updateCityData = async (cityName, state, points, type) => {
   );
 };
 
-// --- UPDATED: GET BUS DETAILS WITH BOOKED SEATS (Direct Match Logic) ---
+// --- UPDATED: GET BUS DETAILS WITH BOOKED SEATS ---
 export const getBusById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -26,19 +26,15 @@ export const getBusById = async (req, res) => {
 
     const bus = await Bus.findById(id);
     if (!bus) return res.status(404).json({ message: "Bus not found" });
-
-    // --- NEW ROBUST MATCHING LOGIC ---
-    // Hum sirf wahi bookings uthayenge jo is date string se exact match karti hain
-    // .trim() isliye taaki koi hidden space na rahe
     const searchDate = String(date).trim();
 
     const activeBookings = await Booking.find({
       bus: id,
-      journeyDate: searchDate, // Direct String Match
+      journeyDate: searchDate, 
       paymentStatus: "Completed"
     });
 
-    // Debugging ke liye terminal mein check karein
+    // Debugging logs
     console.log(`Backend searching for: Bus=${id}, Date=${searchDate}`);
     console.log(`Bookings found: ${activeBookings.length}`);
 
@@ -108,7 +104,60 @@ export const getAllBuses = async (req, res) => {
   }
 };
 
-// 5. Delete Bus
+// 5. Get Popular Routes
+export const getPopularRoutes = async (req, res) => {
+  try {
+    const popularRoutes = await Booking.aggregate([
+      { $match: { paymentStatus: "Completed" } },
+      { $group: { _id: "$bus", bookings: { $sum: 1 } } },
+      { $sort: { bookings: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: "buses",
+          localField: "_id",
+          foreignField: "_id",
+          as: "bus",
+        },
+      },
+      { $unwind: "$bus" },
+      {
+        $project: {
+          busId: "$bus._id",
+          busName: "$bus.busName",
+          source: "$bus.source",
+          destination: "$bus.destination",
+          price: "$bus.price",
+          departureTime: "$bus.departureTime",
+          arrivalTime: "$bus.arrivalTime",
+          bookings: 1,
+        },
+      },
+    ]);
+
+    if (popularRoutes.length === 0) {
+      const fallbackBuses = await Bus.find().sort({ createdAt: -1 }).limit(3);
+      return res.status(200).json(
+        fallbackBuses.map((bus) => ({
+          busId: bus._id,
+          busName: bus.busName,
+          source: bus.source,
+          destination: bus.destination,
+          price: bus.price,
+          departureTime: bus.departureTime,
+          arrivalTime: bus.arrivalTime,
+          bookings: 0,
+        }))
+      );
+    }
+
+    res.status(200).json(popularRoutes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 6. Delete Bus
 export const deleteBus = async (req, res) => {
   try {
     const deletedBus = await Bus.findByIdAndDelete(req.params.id);
