@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 export default function OTPPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false); // Loading state resend ke liye
   const location = useLocation();
   const navigate = useNavigate();
   const userPhone = location.state?.phone;
@@ -12,10 +13,35 @@ export default function OTPPage() {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    // Auto-focus next input
     if (value && index < 5) {
       const nextInput = document.querySelectorAll("input")[index + 1];
       if (nextInput) nextInput.focus();
+    }
+  };
+
+  // --- NEW: RESEND OTP FUNCTION ---
+  const handleResendOTP = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:5000/api/auth/send-otp", { // Aapki OTP send karne wali API
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: userPhone }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("OTP sent successfully!");
+        setOtp(["", "", "", "", "", ""]); // OTP inputs clear kar dein
+      } else {
+        alert(data.message || "Failed to resend OTP");
+      }
+    } catch (error) {
+      console.error("Resend Error:", error);
+      alert("Error connecting to server.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,32 +62,19 @@ export default function OTPPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // --- 1. CLEAR OLD GUEST DATA ---
-        // Login hote hi purana guest status hata dein
         localStorage.removeItem("isGuest");
         localStorage.removeItem("guestTicketId");
-
-        // --- 2. SAVE NEW AUTH DATA ---
         localStorage.setItem("token", data.token);
         
-        // Agar backend se role nahi aaya toh default 'user' save karein
         const userRole = data.role || "user";
         localStorage.setItem("role", userRole);
 
-        console.log("Login Success. Role:", userRole); // Debugging
-
-        // --- 3. DYNAMIC REDIRECTION ---
         if (userRole === "admin") {
-          // Admin seedha dashboard/home par jayega
           navigate("/");
         } else {
-          // Normal User profile check karega
           if (data.isProfileComplete === false) {
-            // Naya user: Pehle success screen dikhayenge
             navigate("/account-created");
           } else {
-            // Purana user: Jiski profile complete hai, use seedha Home bhej do
-            // (Ya agar aap chahti hain ki wo apni details dekhe toh "/profile" bhi kar sakti hain)
             navigate("/");
           }
         }
@@ -103,9 +116,14 @@ export default function OTPPage() {
           Verify OTP →
         </button>
         
-        <p className="mt-4 text-sm text-gray-500 cursor-pointer hover:underline">
-          Resend OTP
-        </p>
+        {/* UPDATED: Resend OTP Button */}
+        <button 
+          onClick={handleResendOTP}
+          disabled={loading}
+          className={`mt-4 text-sm font-medium ${loading ? 'text-gray-400' : 'text-blue-600 hover:underline'}`}
+        >
+          {loading ? "Sending..." : "Resend OTP"}
+        </button>
       </div>
     </div>
   );
