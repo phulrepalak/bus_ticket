@@ -3,15 +3,14 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Footer = ({ isAdmin: isAdminProp }) => {
   const [isAdmin, setIsAdmin] = useState(isAdminProp);
-  const location = useLocation(); // Location use karne se page change par footer refresh hoga
+  const location = useLocation(); 
 
   useEffect(() => {
-    // Agar prop nahi mila toh localStorage se check karega
     const role = localStorage.getItem("role");
     setIsAdmin(isAdminProp ?? (role === "admin"));
   }, [isAdminProp, location]);
 
-  // --- Dynamic Links Logic ---
+  // --- Dynamic Links ---
   const adminLinks = [
     { name: 'Home', path: '/' },
     { name: 'Search Buses', path: '/search' },
@@ -54,7 +53,7 @@ const Footer = ({ isAdmin: isAdminProp }) => {
             </p>
           </div>
 
-          {/* 2. Quick Links (Dynamic - Based on Login Role) */}
+          {/* 2. Quick Links (Dynamic) */}
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-white">
               {isAdmin ? "Management" : "Quick Links"}
