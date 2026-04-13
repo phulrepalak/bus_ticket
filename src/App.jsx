@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 
 // Components
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 // Pages
 import Home from "./pages/Home";
@@ -19,7 +20,6 @@ import Payment from "./pages/Payment";
 import TicketConfirmation from "./pages/TicketConfirmation"; 
 import TrackBooking from "./pages/TrackBooking";
 import MyBookings from "./pages/MyBookings";
-import Activity from "./pages/Activity";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard"; 
@@ -43,7 +43,6 @@ function App() {
         <Route path="/profile" element={<Profile />} />  
         <Route path="/complete-profile" element={<CompleteProfile />} />      
         <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/activity" element={<Activity />} />
 
         {/* --- BOOKING FLOW ROUTES --- */}
         <Route path="/select-seat/:busId" element={<SelectSeat />} />
@@ -61,6 +60,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" />} />
        
       </Routes>
+      <Footer />
     </Router>
   );
 }
