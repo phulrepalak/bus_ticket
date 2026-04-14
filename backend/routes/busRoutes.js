@@ -14,7 +14,6 @@ const router = express.Router();
 
 // --- 1. STATIC ROUTES (Check these first) ---
 
-// Move /all to the top so it doesn't get confused with /:id
 router.get("/all", getAllBuses);
 
 router.get("/points", async (req, res) => {
@@ -49,11 +48,26 @@ router.get("/search", async (req, res) => {
     const selectedDate = new Date(date);
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const dayName = days[selectedDate.getDay()];
+
+    // Time filtering logic for today's search
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+
     let query = {
       source: { $regex: new RegExp(`^${source}$`, "i") },
       destination: { $regex: new RegExp(`^${destination}$`, "i") },
       availableDays: dayName 
     };
+
+    if (isToday) {
+      const currentHours = today.getHours().toString().padStart(2, '0');
+      const currentMinutes = today.getMinutes().toString().padStart(2, '0');
+      const currentTimeString = `${currentHours}:${currentMinutes}`;
+      
+      // Filter for buses departing after the current time
+      query.departureTime = { $gt: currentTimeString };
+    }
+
     const buses = await Bus.find(query).sort({ departureTime: 1 });
     res.status(200).json(buses);
   } catch (err) {
