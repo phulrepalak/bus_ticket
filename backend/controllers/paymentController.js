@@ -1,5 +1,9 @@
 import Razorpay from 'razorpay';
 import dotenv from 'dotenv';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { ApiError } from '../utils/ApiError.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+
 dotenv.config();
 
 const instance = new Razorpay({
@@ -7,15 +11,16 @@ const instance = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-export const checkout = async (req, res) => {
+export const checkout = asyncHandler(async (req, res) => {
+  const options = {
+    amount: Number(req.body.amount * 100),
+    currency: "INR",
+  };
+  
   try {
-    const options = {
-      amount: Number(req.body.amount * 100),
-      currency: "INR",
-    };
     const order = await instance.orders.create(options);
-    res.status(200).json(order); // Pura order object bhejo
+    return res.status(200).json(new ApiResponse(200, order, "Checkout initialised"));
   } catch (error) {
-    res.status(500).json({ message: "Razorpay Error", error });
+    throw new ApiError(500, "Razorpay Error");
   }
-};
+});

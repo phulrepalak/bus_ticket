@@ -2,126 +2,96 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import twilio from "twilio";
 import dotenv from "dotenv";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 dotenv.config();
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// 1. Send OTP via Twilio
-export const sendOTP = async (req, res) => {
+export const sendOTP = asyncHandler(async (req, res) => {
   const { phone } = req.body;
-  if (!phone) return res.status(400).json({ message: "Phone number is required" });
+  if (!phone) throw new ApiError(400, "Phone number is required");
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  let user = await User.findOne({ phone });
+  if (!user) {
+    user = new User({ phone, isProfileComplete: false, role: "user" });
+  }
+  
+  user.otp = otp;
+  await user.save();
 
   try {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    let user = await User.findOne({ phone });
-    if (!user) {
-      // Naya user create karte waqt default role 'user' ensure karein
-      user = new User({ 
-        phone, 
-        isProfileComplete: false, 
-        role: "user" 
-      });
-    }
-    
-    user.otp = otp;
-    await user.save();
-
     await client.messages.create({
       body: `Your GoBus OTP is: ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
       to: `+91${phone}` 
     });
-
-    console.log(`✅ OTP ${otp} sent to +91${phone}`);
-    res.status(200).json({ message: "OTP sent successfully!" });
-
   } catch (err) {
-    console.error("❌ Twilio Error:", err.message);
-    res.status(500).json({ error: "Twilio Error: Please check your credentials." });
+    throw new ApiError(500, "Twilio Error: Please check your credentials.");
   }
-};
 
-// 2. Verify OTP (Robust Role Handling)
-export const verifyOTP = async (req, res) => {
+  return res.status(200).json(new ApiResponse(200, null, "OTP sent successfully!"));
+});
+
+export const verifyOTP = asyncHandler(async (req, res) => {
   const { phone, otp } = req.body;
-  try {
-    const user = await User.findOne({ phone });
-    
-    if (!user || user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
+  const user = await User.findOne({ phone });
+  
+  if (!user || user.otp !== otp) {
+    throw new ApiError(400, "Invalid OTP");
+  }
 
-    // OTP ko verify hone ke baad null karein
-    user.otp = null; 
-    await user.save();
+  user.otp = null; 
+  await user.save();
 
-    // Fallback logic: Agar galti se role undefined ho toh "user" maanein
-    const userRole = user.role || "user";
+  const userRole = user.role || "user";
 
-    // JWT Token generate karein
-    const token = jwt.sign(
-      { id: user._id, role: userRole }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: "7d" }
-    );
+  const token = jwt.sign(
+    { id: user._id, role: userRole }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: "7d" }
+  );
 
-    // Response bhejte waqt console mein check karein (Debugging)
-    console.log(`User Logged In: ${phone}, Role: ${userRole}`);
-
-    res.status(200).json({
+  return res.status(200).json(
+    new ApiResponse(200, {
       token,
       role: userRole, 
-      isProfileComplete: user.isProfileComplete,
-      message: "Login successful!"
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+      isProfileComplete: user.isProfileComplete
+    }, "Login successful!")
+  );
+});
 
-// 3. Complete Profile
-export const completeProfile = async (req, res) => {
+export const completeProfile = asyncHandler(async (req, res) => {
   const { fullName, email, gender } = req.body;
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.user.id, 
-      { fullName, email, gender, isProfileComplete: true },
-      { new: true }
-    ).select("-otp");
+  const user = await User.findByIdAndUpdate(
+    req.user.id, 
+    { fullName, email, gender, isProfileComplete: true },
+    { new: true }
+  ).select("-otp");
 
-    res.status(200).json({ message: "Profile created successfully", user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-// 4. Update Profile (Existing user ke liye - Profile page se edit karne ke liye)
-export const updateProfile = async (req, res) => {
+  return res.status(200).json(new ApiResponse(200, { user }, "Profile created successfully"));
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
   const { fullName, email, gender } = req.body;
-  try {
-    // Yahan hum isProfileComplete ko touch nahi karenge, sirf data update karenge
-    const user = await User.findByIdAndUpdate(
-      req.user.id, 
-      { fullName, email, gender },
-      { new: true }
-    ).select("-otp");
+  const user = await User.findByIdAndUpdate(
+    req.user.id, 
+    { fullName, email, gender },
+    { new: true }
+  ).select("-otp");
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+  if (!user) throw new ApiError(404, "User not found");
 
-    res.status(200).json({ message: "Profile updated successfully", user });
-  } catch (err) {
-    console.error("Update Error:", err.message);
-    res.status(500).json({ error: "Failed to update profile" });
-  }
-};
-// 5. Get User Profile (Details fetch karne ke liye)
-export const getProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-otp"); 
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json({ error: "Server error while fetching profile" });
-  }
-};
+  return res.status(200).json(new ApiResponse(200, { user }, "Profile updated successfully"));
+});
+
+export const getProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select("-otp"); 
+  if (!user) throw new ApiError(404, "User not found");
+
+  return res.status(200).json(new ApiResponse(200, user, "Profile fetched successfully"));
+});
