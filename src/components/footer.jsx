@@ -30,23 +30,24 @@ const Footer = ({ isAdmin: isAdminProp }) => {
 
   return (
     <footer className="bg-slate-900 text-slate-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
           
           {/* 1. Company Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="bg-sky-100 p-1.5 rounded-lg">
+              <div className="bg-sky-100 p-1.5 rounded-lg shrink-0">
                 <svg className="w-6 h-6 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2 flex-wrap">
                 GoBus 
-                {isAdmin && <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded uppercase tracking-wider">Admin</span>}
+                {isAdmin && <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded uppercase tracking-wider block">Admin</span>}
               </h3>
             </div>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-slate-400">
               {isAdmin 
                 ? "Admin Control Panel: Manage routes, update bus schedules, and monitor system activities efficiently."
                 : "Your trusted partner for comfortable and reliable bus travel across India. Book tickets easily with our platform."}
@@ -55,13 +56,13 @@ const Footer = ({ isAdmin: isAdminProp }) => {
 
           {/* 2. Quick Links (Dynamic) */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">
+            <h4 className="text-lg font-semibold text-white tracking-wide">
               {isAdmin ? "Management" : "Quick Links"}
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5 text-sm">
               {currentLinks.map((link, index) => (
                 <li key={index}>
-                  <Link to={link.path} className="hover:text-sky-400 transition-colors">
+                  <Link to={link.path} className="hover:text-sky-400 transition-colors block py-0.5">
                     {link.name}
                   </Link>
                 </li>
@@ -71,34 +72,37 @@ const Footer = ({ isAdmin: isAdminProp }) => {
 
           {/* 3. Support Links */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">Support</h4>
-            <ul className="space-y-2">
-              <li><Link to="/help" className="hover:text-sky-400 transition-colors">Help Center</Link></li>
-              <li><Link to="/faq" className="hover:text-sky-400 transition-colors">FAQ</Link></li>
-              <li><Link to="/contact" className="hover:text-sky-400 transition-colors">Contact Us</Link></li>
-              <li><Link to="/terms" className="hover:text-sky-400 transition-colors">Terms & Conditions</Link></li>
+            <h4 className="text-lg font-semibold text-white tracking-wide">Support</h4>
+            <ul className="space-y-2.5 text-sm">
+              <li><Link to="/help" className="hover:text-sky-400 transition-colors block py-0.5">Help Center</Link></li>
+              <li><Link to="/faq" className="hover:text-sky-400 transition-colors block py-0.5">FAQ</Link></li>
+              <li><Link to="/contact" className="hover:text-sky-400 transition-colors block py-0.5">Contact Us</Link></li>
+              <li><Link to="/terms" className="hover:text-sky-400 transition-colors block py-0.5">Terms & Conditions</Link></li>
             </ul>
           </div>
 
           {/* 4. Contact Details */}
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">Contact Info</h4>
-            <div className="space-y-3 text-sm">
-              <p className="flex items-center gap-2">
-                <span className="text-sky-400">📍</span> 123 Bus Street, Delhi, India
+            <h4 className="text-lg font-semibold text-white tracking-wide">Contact Info</h4>
+            <div className="space-y-3 text-sm text-slate-400">
+              <p className="flex items-start gap-2.5">
+                <span className="text-sky-400 text-base leading-none select-none">📍</span> 
+                <span className="break-words">123 Bus Street, Delhi, India</span>
               </p>
-              <p className="flex items-center gap-2">
-                <span className="text-sky-400">📞</span> +91 98765 43210
+              <p className="flex items-center gap-2.5">
+                <span className="text-sky-400 text-base leading-none select-none">📞</span> 
+                <a href="tel:+919876543210" className="hover:text-sky-400 transition-colors">+91 98765 43210</a>
               </p>
-              <p className="flex items-center gap-2">
-                <span className="text-sky-400">✉️</span> support@gobus.com
+              <p className="flex items-center gap-2.5">
+                <span className="text-sky-400 text-base leading-none select-none">✉️</span> 
+                <a href="mailto:support@gobus.com" className="hover:text-sky-400 transition-colors break-all">support@gobus.com</a>
               </p>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-8 pt-8 text-center">
-          <p className="text-sm text-slate-500">
+        <div className="border-t border-slate-800 mt-8 pt-6 text-center">
+          <p className="text-xs md:text-sm text-slate-500 leading-relaxed px-4">
             © {new Date().getFullYear()} GoBus. All rights reserved. {isAdmin ? "Admin Portal" : "User Portal"}
           </p>
         </div>

@@ -6,12 +6,13 @@ const ManageBus = () => {
   const [buses, setBuses] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch all active fleet buses from database
   const fetchBuses = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/bus/all");
       setBuses(res.data);
     } catch (err) {
-      console.error("Data laane mein error:", err);
+      console.error("Error fetching fleet data:", err);
     }
   };
 
@@ -19,96 +20,100 @@ const ManageBus = () => {
     fetchBuses();
   }, []);
 
+  // Remove targeted bus from fleet roster
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to remove this bus from the fleet?")) {
       try {
         await axios.delete(`http://localhost:5000/api/bus/delete/${id}`);
         fetchBuses();
       } catch (err) {
-        alert("Delete karne mein dikkat aayi");
+        alert("Failed to decommission the vehicle.");
       }
     }
   };
 
+  // Route back to operational control interface with context mapping payloads
   const handleEdit = (bus) => {
     navigate("/admin", { state: { editBus: bus } });
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-8">
+    <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-8 antialiased">
       <div className="max-w-7xl mx-auto">
-        {/* Modern Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+        
+        {/* Dynamic Analytics Header Grid Layout */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 sm:mb-12 gap-4 sm:gap-6">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Fleet Assets Inventory
             </h1>
-            <p className="text-slate-500 font-medium mt-1">
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
               Review and manage your active Vehicles.
             </p>
           </div>
-          <div className="flex items-center gap-4 bg-white px-6 py-3 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-dark-600">Total Operational</span>
-              <span className="text-xl font-black text-blue-800">{buses.length} Vehicles</span>
+          <div className="flex items-center gap-4 bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex flex-col items-start sm:items-end">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-bold text-slate-400">Total Operational</span>
+              <span className="text-lg sm:text-xl font-black text-blue-800">{buses.length} Vehicles</span>
             </div>
           </div>
         </div>
 
-        {/* Modern List Layout - Less "Boxy", More "List-Item" Feel */}
-        <div className="space-y-4">
+        {/* Fleet Asset Roster Stacking Area */}
+        <div className="space-y-4 w-full">
           {buses.map((bus) => (
             <div 
               key={bus._id} 
-              className="group bg-white rounded-3xl p-2 pr-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 flex flex-col lg:flex-row lg:items-center gap-6"
+              className="group bg-white rounded-3xl p-4 lg:p-2 lg:pr-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 w-full"
             >
-              {/* Bus Status Tag (The Vertical Bar look) */}
-              <div className="lg:w-2 lg:h-20 bg-blue-600 rounded-full hidden lg:block ml-2"></div>
+              {/* Asset Alignment Marker Side Panel */}
+              <div className="lg:w-2 lg:h-20 bg-blue-600 rounded-full hidden lg:block ml-2 shrink-0"></div>
 
-              {/* Main Info */}
-              <div className="flex-1 px-4 lg:px-0">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+              {/* Primary Identity Segment */}
+              <div className="w-full lg:flex-1 px-1 lg:px-0">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span className="bg-slate-100 text-slate-600 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider whitespace-nowrap">
                     {bus.busNumber}
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                  <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider whitespace-nowrap ${
                     bus.comfortType === 'AC' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'
                   }`}>
                     {bus.comfortType}
                   </span>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800">{bus.busName}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight break-words">{bus.busName}</h3>
               </div>
 
-              {/* Route Info */}
-              <div className="flex-1 px-4 lg:px-0">
-                <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">Route Connection</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-slate-700 font-bold">{bus.source}</span>
-                  <div className="flex-1 border-t-2 border-dashed border-blue-800 min-w-[30px] relative">
-                     <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-blue-1000 text-lg">→</span>
+              {/* Route Connection Layout Map */}
+              <div className="w-full lg:flex-1 px-1 lg:px-0 border-t lg:border-t-0 border-slate-50 pt-3 lg:pt-0">
+                <p className="text-[9px] sm:text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1.5">Route Connection</p>
+                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                  <span className="text-sm sm:text-base text-slate-700 font-bold truncate">{bus.source}</span>
+                  <div className="flex-1 border-t-2 border-dashed border-blue-200 min-w-[24px] relative mx-1">
+                     <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-blue-400 text-base select-none">→</span>
                   </div>
-                  <span className="text-slate-700 font-bold">{bus.destination}</span>
+                  <span className="text-sm sm:text-base text-slate-700 font-bold truncate">{bus.destination}</span>
                 </div>
               </div>
 
-              {/* Price & Seats */}
-              <div className="flex gap-8 px-4 lg:px-0">
-                <div className="text-center">
-                  <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">Fare</p>
-                  <p className="text-lg font-black text-slate-900">₹{bus.price}</p>
+              {/* Capacity and Pricing Diagnostics Blocks */}
+              <div className="flex gap-6 sm:gap-8 px-1 lg:px-0 border-t lg:border-t-0 border-slate-50 pt-3 lg:pt-0 w-full lg:w-auto">
+                <div className="text-left lg:text-center min-w-[60px]">
+                  <p className="text-[9px] sm:text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">Fare</p>
+                  <p className="text-base sm:text-lg font-black text-slate-900">₹{bus.price}</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">Capacity</p>
-                  <p className="text-lg font-bold text-slate-700">{bus.availableSeats}</p>
+                <div className="text-left lg:text-center min-w-[60px]">
+                  <p className="text-[9px] sm:text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">Capacity</p>
+                  <p className="text-base sm:text-lg font-bold text-slate-700">{bus.availableSeats}</p>
                 </div>
               </div>
 
-              {/* Action Buttons - Modern Rounded Style */}
-              <div className="flex gap-2 p-4 lg:p-0">
+              {/* Configuration Action Trigger Systems */}
+              <div className="flex gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-50 w-full lg:w-auto justify-end">
                 <button 
+                  type="button"
                   onClick={() => handleEdit(bus)}
-                  className="p-3 rounded-2xl bg-slate-50 text-slate-600 hover:bg-blue-600 hover:text-white transition-all duration-300 group-hover:shadow-md"
+                  className="p-3 rounded-2xl bg-slate-50 text-slate-600 hover:bg-blue-600 hover:text-white transition-all duration-300 group-hover:shadow-md shrink-0 active:scale-95"
                   title="Modify Configuration"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,8 +121,9 @@ const ManageBus = () => {
                   </svg>
                 </button>
                 <button 
+                  type="button"
                   onClick={() => handleDelete(bus._id)}
-                  className="p-3 rounded-2xl bg-red-50 text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 group-hover:shadow-md"
+                  className="p-3 rounded-2xl bg-red-50 text-red-500 hover:bg-red-600 hover:text-white transition-all duration-300 group-hover:shadow-md shrink-0 active:scale-95"
                   title="Decommission Vehicle"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,6 +131,7 @@ const ManageBus = () => {
                   </svg>
                 </button>
               </div>
+
             </div>
           ))}
         </div>

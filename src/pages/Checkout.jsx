@@ -29,6 +29,7 @@ export default function Checkout() {
     dropping: bus?.droppingPoints?.find(p => droppingFilter?.includes(p.location))?.location || "" 
   });
 
+  // Fetch verified user profile data if token exists
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -62,6 +63,7 @@ export default function Checkout() {
     setPassengers(updated);
   };
 
+  // Check form inputs validation state matrix
   const isFormValid = 
     !isLoading &&
     points.boarding && 
@@ -70,6 +72,7 @@ export default function Checkout() {
     contact.phone?.length >= 10 &&
     passengers.every(p => p.name?.trim() !== "" && p.age !== "");
 
+  // Handle transaction staging and redirect to payment module
   const handleConfirmBooking = () => {
     if (!isFormValid) return;
     navigate("/payment", { 
@@ -85,12 +88,13 @@ export default function Checkout() {
     });
   };
 
+  // Fallback screen if active state context is missing
   if (!bus || selectedSeats.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="bg-white p-10 rounded-3xl shadow-sm text-center border border-slate-200">
+        <div className="bg-white p-6 sm:p-10 rounded-3xl shadow-sm text-center border border-slate-200 max-w-sm w-full">
           <h2 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Session Expired</h2>
-          <button onClick={() => navigate("/")} className="mt-6 bg-blue-900 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all hover:bg-blue-800">Back to Search</button>
+          <button onClick={() => navigate("/")} className="mt-6 w-full bg-blue-900 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest transition-all hover:bg-blue-800">Back to Search</button>
         </div>
       </div>
     );
@@ -99,56 +103,56 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-slate-50 pb-12 font-sans text-left text-slate-800 tracking-tight">
       
-      {/* Header - Clean and Professional */}
-      <div className="bg-white shadow-sm border-b mb-8 py-6 px-6 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tighter leading-none">{bus?.busName}</h2>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+      {/* Checkout Session Top Header Bar */}
+      <div className="bg-white shadow-sm border-b mb-6 sm:mb-8 py-4 sm:py-6 px-4 sm:px-6 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="space-y-1 w-full sm:w-auto">
+            <h2 className="text-xl sm:text-2xl font-black text-blue-900 uppercase tracking-tighter leading-none break-words">{bus?.busName}</h2>
+            <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] leading-tight">
               {bus?.seatType} • {bus?.source} → {bus?.destination}
             </p>
           </div>
-          <div className="text-right">
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Journey Date</p>
-             <p className="text-lg font-black text-slate-700 mt-1 uppercase leading-none">{date}</p>
+          <div className="text-left sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-slate-100">
+             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Journey Date</p>
+             <p className="text-base sm:text-lg font-black text-slate-700 mt-1 uppercase leading-none">{date}</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 px-4">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 px-3 sm:px-4">
         
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* LEFT COLUMN: PRIMARY FORMS SUMMARY */}
+        <div className="lg:col-span-8 space-y-6 w-full">
           
-          {/* 1. CONTACT INFO - Balanced Spacing */}
-          <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">Contact Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+          {/* CONTACT INFO CARD */}
+          <div className="bg-white rounded-2xl p-4 sm:p-7 border border-slate-200 shadow-sm w-full">
+            <h3 className="text-xs sm:text-sm font-black text-blue-900 uppercase tracking-widest mb-4 sm:mb-6 border-b border-slate-50 pb-3">Contact Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6">
+              <div className="space-y-2 w-full">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
                 <input type="email" value={contact.email} onChange={(e) => setContact({...contact, email: e.target.value})} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-blue-900 transition-all" placeholder="Enter Email" />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
                 <input type="text" value={contact.phone} onChange={(e) => setContact({...contact, phone: e.target.value})} className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-blue-900 transition-all" placeholder="Enter Mobile" />
               </div>
             </div>
           </div>
 
-          {/* 2. BOARDING & DROPPING  */}
-          <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">Selection Points</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+          {/* BOARDING & DROPPING CORRELATION SELECTOR */}
+          <div className="bg-white rounded-2xl p-4 sm:p-7 border border-slate-200 shadow-sm w-full">
+            <h3 className="text-xs sm:text-sm font-black text-blue-900 uppercase tracking-widest mb-4 sm:mb-6 border-b border-slate-50 pb-3">Selection Points</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6">
+              <div className="space-y-2 w-full">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Boarding From</label>
-                <select className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900" value={points.boarding} onChange={(e) => setPoints({...points, boarding: e.target.value})}>
+                <select className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900 truncate" value={points.boarding} onChange={(e) => setPoints({...points, boarding: e.target.value})}>
                   <option value="">Choose Boarding Point</option>
                   {bus?.boardingPoints?.map((p, i) => <option key={i} value={p.location}>{p.location} ({p.time})</option>)}
                 </select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 w-full">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dropping To</label>
-                <select className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900" value={points.dropping} onChange={(e) => setPoints({...points, dropping: e.target.value})}>
+                <select className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900 truncate" value={points.dropping} onChange={(e) => setPoints({...points, dropping: e.target.value})}>
                   <option value="">Choose Dropping Point</option>
                   {bus?.droppingPoints?.map((p, i) => <option key={i} value={p.location}>{p.location} ({p.time})</option>)}
                 </select>
@@ -156,27 +160,27 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* 3. PASSENGER INFORMATION */}
-          <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-8 border-b border-slate-50 pb-3">Passenger Information</h3>
+          {/* PASSENGER PROFILE ITERATOR COMPONENT */}
+          <div className="bg-white rounded-2xl p-4 sm:p-7 border border-slate-200 shadow-sm w-full">
+            <h3 className="text-xs sm:text-sm font-black text-blue-900 uppercase tracking-widest mb-6 sm:mb-8 border-b border-slate-50 pb-3">Passenger Information</h3>
             {passengers.map((p, index) => (
-              <div key={index} className="mb-8 last:mb-0 pb-8 border-b border-slate-50 last:border-0 last:pb-0">
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="bg-blue-900 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black">{p.seat}</span>
+              <div key={index} className="mb-6 sm:mb-8 last:mb-0 pb-6 sm:pb-8 border-b border-slate-100 last:border-0 last:pb-0 w-full">
+                <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                  <span className="bg-blue-900 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0">{p.seat}</span>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seat Number {p.seat}</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                  <div className="md:col-span-6 space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end w-full">
+                  <div className="sm:col-span-6 space-y-2 w-full">
                     <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Full Name</label>
                     <input type="text" placeholder="Enter Name" className="w-full p-3.5 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900" onChange={(e) => handleInputChange(index, "name", e.target.value)} />
                   </div>
-                  <div className="md:col-span-2 space-y-2">
+                  <div className="sm:col-span-2 space-y-2 w-full">
                     <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Age</label>
                     <input type="number" placeholder="00" className="w-full p-3.5 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-900" onChange={(e) => handleInputChange(index, "age", e.target.value)} />
                   </div>
-                  <div className="md:col-span-4 flex gap-2">
+                  <div className="sm:col-span-4 flex gap-2 w-full">
                     {["M", "F"].map((g) => (
-                      <button key={g} onClick={() => handleInputChange(index, "gender", g)} className={`flex-1 py-3.5 border rounded-xl text-[10px] font-black uppercase transition-all tracking-widest ${p.gender === g ? 'bg-blue-900 text-white border-blue-900' : 'bg-white text-slate-400 border-slate-200'}`}>{g === "M" ? "Male" : "Female"}</button>
+                      <button key={g} type="button" onClick={() => handleInputChange(index, "gender", g)} className={`flex-1 py-3.5 border rounded-xl text-[10px] font-black uppercase transition-all tracking-widest ${p.gender === g ? 'bg-blue-900 text-white border-blue-900' : 'bg-white text-slate-400 border-slate-200'}`}>{g === "M" ? "Male" : "Female"}</button>
                     ))}
                   </div>
                 </div>
@@ -184,31 +188,33 @@ export default function Checkout() {
             ))}
           </div>
 
-          {/* 4. CANCELLATION POLICY  */}
-          <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-black text-blue-900 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">Cancellation Policy</h3>
-            <div className="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
-               <div className="grid grid-cols-2 bg-slate-50 p-3 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <span>Time before Departure</span>
-                  <span className="text-right">Refund Percentage</span>
+          {/* CANCELLATION MATRICES COMPLIANCE COMPONENT */}
+          <div className="bg-white rounded-2xl p-4 sm:p-7 border border-slate-200 shadow-sm w-full">
+            <h3 className="text-xs sm:text-sm font-black text-blue-900 uppercase tracking-widest mb-4 sm:mb-6 border-b border-slate-50 pb-3">Cancellation Policy</h3>
+            <div className="border border-slate-100 rounded-xl overflow-hidden shadow-sm w-full">
+               <div className="grid grid-cols-2 bg-slate-50 p-3 border-b border-slate-100 text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                 <span>Time before Departure</span>
+                 <span className="text-right">Refund Percentage</span>
                </div>
-               <div className="grid grid-cols-2 p-4 border-b border-slate-50 text-xs font-bold text-slate-600 italic">
-                  <span>More than 24 Hours</span>
-                  <span className="text-right text-green-600 uppercase font-black">90% Refund</span>
+               <div className="grid grid-cols-2 p-3 sm:p-4 border-b border-slate-50 text-xs font-bold text-slate-600 italic">
+                 <span>More than 24 Hours</span>
+                 <span className="text-right text-green-600 uppercase font-black">90% Refund</span>
                </div>
-               <div className="grid grid-cols-2 p-4 text-xs font-bold text-slate-600 italic">
-                  <span>Within 24 Hours</span>
-                  <span className="text-right text-red-500 uppercase font-black">No Refund</span>
+               <div className="grid grid-cols-2 p-3 sm:p-4 text-xs font-bold text-slate-600 italic">
+                 <span>Within 24 Hours</span>
+                 <span className="text-right text-red-500 uppercase font-black">No Refund</span>
                </div>
             </div>
           </div>
         </div>
 
-        {/* RIGHT COLUMN  */}
-        <div className="lg:col-span-4 space-y-6">
-           <div className="sticky top-24 space-y-6">
-              <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-md">
-                <h3 className="text-sm font-black text-slate-800 border-b border-slate-100 pb-4 mb-6 uppercase tracking-widest font-sans">Fare Summary</h3>
+        {/* RIGHT COLUMN: STICKY BILLING INTERFACE */}
+        <div className="lg:col-span-4 space-y-6 w-full">
+           <div className="lg:sticky lg:top-24 space-y-6 w-full">
+              
+              {/* FARES COMPUTATION SUMMARY CARD */}
+              <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-md w-full">
+                <h3 className="text-xs sm:text-sm font-black text-slate-800 border-b border-slate-100 pb-4 mb-5 sm:mb-6 uppercase tracking-widest font-sans">Fare Summary</h3>
                 <div className="space-y-4 pb-4 border-b border-dashed border-slate-100">
                   <div className="flex justify-between text-xs font-bold text-slate-500 uppercase">
                     <span>Base Fare (x{passengers.length})</span>
@@ -220,24 +226,25 @@ export default function Checkout() {
                   </div>
                 </div>
                 <div className="pt-5">
-                   <p className="text-[10px] font-black text-slate-400 uppercase leading-none mb-2 tracking-widest">Total Payable Amount</p>
-                   <p className="text-3xl font-black text-blue-900 mt-1 tracking-tighter leading-none">₹{total + 45}</p>
+                   <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase leading-none mb-2 tracking-widest">Total Payable Amount</p>
+                   <p className="text-2xl sm:text-3xl font-black text-blue-900 mt-1 tracking-tighter leading-none">₹{total + 45}</p>
                 </div>
                 <button 
+                  type="button"
                   onClick={handleConfirmBooking} 
                   disabled={!isFormValid || isLoading} 
-                  className={`w-full py-5 mt-8 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isFormValid ? 'bg-blue-900 text-white shadow-blue-100 hover:bg-blue-800' : 'bg-slate-100 text-slate-300'}`}
+                  className={`w-full py-4 sm:py-5 mt-6 sm:mt-8 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isFormValid ? 'bg-blue-900 text-white shadow-blue-100 hover:bg-blue-800' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
                 > 
                   Proceed to Payment 
                 </button>
               </div>
 
-              {/* AMENITIES - Compact Grid */}
-              <div className="bg-white rounded-2xl p-7 border border-slate-200 shadow-sm">
-                 <p className="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-2">Included Amenities</p>
+              {/* FLEET AMENITIES CORRELATION LOGS */}
+              <div className="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200 shadow-sm w-full">
+                 <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest border-b pb-2">Included Amenities</p>
                  <div className="flex flex-wrap gap-2">
                     {bus?.amenities?.map((a, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-600 uppercase tracking-tight"> {a} </span>
+                      <span key={i} className="px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-600 uppercase tracking-tight"> {a} </span>
                     ))}
                  </div>
               </div>

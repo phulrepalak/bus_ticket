@@ -18,7 +18,7 @@ export const createBooking = async (req, res) => {
       paymentStatus 
     } = req.body;
 
-    // 1. Basic validation: Check ki zaroori cheezein missing toh nahi hain
+    // 1. Basic validation for required fields
     if (!busId || !seats || seats.length === 0 || !paymentId) {
       return res.status(400).json({ 
         message: "Missing required booking details (Bus, Seats, or Payment ID)" 
@@ -69,7 +69,7 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// --- 2. GUEST USER KE LIYE BOOKING TRACK KARNE KA LOGIC ---
+// --- 2. guest user bookings track  ---
 export const trackBooking = async (req, res) => {
   try {
     const { phone } = req.body;

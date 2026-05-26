@@ -19,6 +19,7 @@ const Home = () => {
 
   const today = new Date().toISOString().split("T")[0];
 
+  // Fetch verified cities and popular destination logs from endpoint repository
   useEffect(() => {
     const fetchCities = async () => {
       try {
@@ -74,6 +75,7 @@ const Home = () => {
     setTo(tempFrom);
   };
 
+  // Enforce field parameters validation before navigating to search layout
   const handleSearch = () => {
     if (!from || !to || !date) {
       alert("Please fill all fields");
@@ -90,43 +92,47 @@ const Home = () => {
   };
 
   return (
-    <div>
+    <div className="w-full overflow-x-hidden antialiased">
+      
+      {/* HERO SECTION CONTAINER */}
       <div
-        className="h-[95vh] bg-cover bg-center flex items-center justify-center text-white relative"
+        className="min-h-[100vh] md:h-[95vh] bg-cover bg-center flex items-center justify-center text-white relative py-12 md:py-0"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="absolute inset-0 bg-black/60"></div>
-        <div className="relative z-10 text-center w-full px-4">
-          <h1 className="text-4xl md:text-6xl font-bold">
+        <div className="relative z-10 text-center w-full px-4 max-w-7xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tight leading-tight">
             Book Your <span className="text-orange-400">Bus</span> Easily
           </h1>
-          <div className="mt-12 flex justify-center w-full">
-            <div className="bg-white rounded-2xl shadow-2xl px-4 py-4 md:px-6 md:py-5 w-[95%] md:w-[90%] lg:w-[75%] flex flex-col md:flex-row items-center relative">
+          
+          {/* COMPOSITE SEARCH CONTROL BAR */}
+          <div className="mt-8 md:mt-12 flex justify-center w-full">
+            <div className="bg-white rounded-3xl md:rounded-2xl shadow-2xl p-4 sm:p-5 md:px-6 md:py-5 w-[95%] sm:w-[90%] lg:w-[85%] xl:w-[75%] flex flex-col md:flex-row items-stretch md:items-center relative gap-4 md:gap-0">
               
-              {/* FROM INPUT (Source field with Swap Arrow inside) */}
-              <div className="w-full md:w-1/3 text-left px-2 relative flex items-center">
-                <div className="flex-1">
-                  <p className="text-xs text-gray-400 font-bold uppercase">From</p>
+              {/* SOURCE PARAMETER INPUT */}
+              <div className="w-full md:w-1/3 text-left px-1 md:px-2 relative flex items-center border-b md:border-b-0 pb-3 md:pb-0 border-gray-100">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">From</p>
                   <input
                     list="from-list"
                     type="text"
-                    placeholder="Source"
+                    placeholder="Source City"
                     value={from}
                     onChange={(e) => handleFromChange(e.target.value)}
-                    className="w-full outline-none text-gray-800 font-semibold pr-10" // added padding-right
+                    className="w-full outline-none text-gray-800 font-semibold pr-12 bg-transparent text-sm sm:text-base mt-0.5"
                     autoComplete="off"
                   />
                 </div>
 
-                {/* SWAP BUTTON - Now inside the Source field on the right */}
-                <div className="absolute right-15 top-1/2 -translate-y-1/2 z-20">
+                {/* SWAP TOGGLE SYSTEM */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">
                   <button 
                     type="button"
                     onClick={handleSwap}
-                    className="bg-white p-1.5 rounded-full hover:bg-gray-100 transition-all active:scale-90 shadow-sm border border-gray-100 flex items-center justify-center mr-1"
+                    className="bg-white p-2 rounded-full hover:bg-gray-100 transition-all active:scale-95 shadow-md border border-gray-200 flex items-center justify-center"
                     title="Swap Cities"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#f97316" viewBox="0 0 16 16" className="rotate-90 md:rotate-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#f97316" viewBox="0 0 16 16" className="rotate-90 md:rotate-0 transition-transform duration-300">
                       <path fillRule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z"/>
                     </svg>
                   </button>
@@ -139,16 +145,16 @@ const Home = () => {
                 </datalist>
               </div>
 
-              {/* TO INPUT */}
-              <div className="w-full md:w-1/3 text-left px-2 md:ml-4">
-                <p className="text-xs text-gray-400 font-bold uppercase">To</p>
+              {/* DESTINATION PARAMETER INPUT */}
+              <div className="w-full md:w-1/3 text-left px-1 md:px-2 md:ml-4 border-b md:border-b-0 pb-3 md:pb-0 border-gray-100">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">To</p>
                 <input
                   list="to-list"
                   type="text"
-                  placeholder="Destination"
+                  placeholder="Destination City"
                   value={to}
                   onChange={(e) => handleToChange(e.target.value)}
-                  className="w-full outline-none text-gray-800 font-semibold"
+                  className="w-full outline-none text-gray-800 font-semibold text-sm sm:text-base mt-0.5"
                   autoComplete="off"
                 />
                 <datalist id="to-list">
@@ -158,70 +164,74 @@ const Home = () => {
                 </datalist>
               </div>
 
-              {/* DATE */}
-              <div className="w-full md:w-1/4 text-left px-2 border-t md:border-t-0 md:border-l border-gray-200 pt-2 md:pt-0 mt-2 md:mt-0">
-                <p className="text-xs text-gray-400 font-bold uppercase">Date</p>
+              {/* TRAVEL DATE INPUT */}
+              <div className="w-full md:w-1/4 text-left px-1 md:px-2 md:border-l border-gray-200 mt-1 md:mt-0 pb-2 md:pb-0">
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Date</p>
                 <input
                   type="date"
                   min={today}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full outline-none text-gray-800 font-semibold bg-transparent"
+                  className="w-full outline-none text-gray-800 font-semibold bg-transparent text-sm sm:text-base mt-0.5 cursor-pointer block"
                 />
               </div>
 
+              {/* ACTION EXECUTION BUTTON */}
               <button 
+                type="button"
                 onClick={handleSearch}
-                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg whitespace-nowrap mt-4 md:mt-0 ml-0 md:ml-4"
+                className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3.5 rounded-2xl md:rounded-xl font-bold text-sm sm:text-base transition-all duration-300 shadow-lg whitespace-nowrap mt-2 md:mt-0 md:ml-4 active:scale-98 text-center shrink-0"
               >
-                Search
+                Search Buses
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
-      <div className="bg-slate-50 py-16">
+      {/* THREE STEPS PROCESS MARKETING BLOCK */}
+      <div className="bg-slate-50 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-sm uppercase tracking-[0.32em] text-sky-600 font-semibold">
+          <div className="text-center mb-10 sm:mb-12">
+            <p className="text-xs sm:text-sm uppercase tracking-[0.32em] text-sky-600 font-black">
               Quick & Easy Booking
             </p>
-            <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">
+            <h2 className="mt-3 text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               Bus ticket booking in 3 simple steps
             </h2>
-            <p className="mt-4 text-slate-600 max-w-2xl mx-auto">
+            <h3 className="mt-3 text-slate-500 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
               Search routes, pick your seat, and checkout with confidence. Everything is designed to make your travel booking fast and smooth.
-            </p>
+            </h3>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 mb-6">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full">
+            <div className="rounded-3xl border border-slate-200/60 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-all">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 mb-5 sm:mb-6 select-none">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"/><path d="M8 10h8"/><path d="M8 14h5"/></svg>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Search your route</h3>
-              <p className="text-slate-600 leading-7">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Search your route</h3>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
                 Enter your source, destination and travel date to find the best buses available for your journey.
               </p>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 mb-6">
+            <div className="rounded-3xl border border-slate-200/60 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-all">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 mb-5 sm:mb-6 select-none">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16"/><path d="M4 10h16"/><path d="M4 14h9"/><path d="M4 18h12"/></svg>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Select your seat</h3>
-              <p className="text-slate-600 leading-7">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Select your seat</h3>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
                 Choose the perfect seat with real-time availability and clear fare details before you book.
               </p>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 mb-6">
+            <div className="rounded-3xl border border-slate-200/60 bg-white p-6 sm:p-8 shadow-sm hover:shadow-md transition-all sm:col-span-2 lg:col-span-1">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 mb-5 sm:mb-6 select-none">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Pay securely</h3>
-              <p className="text-slate-600 leading-7">
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Pay securely</h3>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
                 Complete your booking with a secure payment flow and receive instant confirmation on your email.
               </p>
             </div>
@@ -229,50 +239,53 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="bg-white py-16">
+      {/* PLATFORM BENEFITS AND POPULAR PATHWAYS ARCHITECTURE */}
+      <div className="bg-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 items-start">
-            <div>
-              <p className="text-sm uppercase tracking-[0.32em] text-orange-500 font-semibold">
+          <div className="grid gap-10 lg:grid-cols-12 items-start w-full">
+            
+            {/* Features Listing Frame */}
+            <div className="lg:col-span-7 space-y-4">
+              <p className="text-xs sm:text-sm uppercase tracking-[0.32em] text-orange-500 font-black">
                 Why choose GoBus?
               </p>
-              <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-slate-900">
+              <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
                 Everything you need for a smooth bus journey
               </h2>
-              <p className="mt-4 text-slate-600 max-w-2xl">
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl">
                 Book fast, travel comfortably, and manage your trips easily with our smart bus booking experience. We make every journey simple and reliable.
               </p>
 
-              <div className="mt-10 space-y-6">
-                <div className="flex gap-4">
-                  <div className="rounded-3xl bg-slate-50 p-4 text-orange-500">
-                    <span className="text-2xl font-bold">01</span>
+              <div className="mt-8 space-y-6 w-full">
+                <div className="flex gap-4 items-start">
+                  <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 text-orange-500 font-black text-xl select-none shrink-0">
+                    01
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Flexible cancellation</h3>
-                    <p className="text-slate-600 mt-2">
+                    <h3 className="text-lg font-bold text-slate-900">Flexible cancellation</h3>
+                    <p className="text-slate-600 text-sm sm:text-base mt-1 leading-relaxed">
                       Change your plans without stress with easy cancellation and refund support.
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="rounded-3xl bg-slate-50 p-4 text-orange-500">
-                    <span className="text-2xl font-bold">02</span>
+                <div className="flex gap-4 items-start">
+                  <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 text-orange-500 font-black text-xl select-none shrink-0">
+                    02
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Live seat selection</h3>
-                    <p className="text-slate-600 mt-2">
+                    <h3 className="text-lg font-bold text-slate-900">Live seat selection</h3>
+                    <p className="text-slate-600 text-sm sm:text-base mt-1 leading-relaxed">
                       Pick your favorite seat from the live layout and see availability instantly.
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <div className="rounded-3xl bg-slate-50 p-4 text-orange-500">
-                    <span className="text-2xl font-bold">03</span>
+                <div className="flex gap-4 items-start">
+                  <div className="rounded-2xl bg-slate-50 p-3 sm:p-4 text-orange-500 font-black text-xl select-none shrink-0">
+                    03
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Secure payments</h3>
-                    <p className="text-slate-600 mt-2">
+                    <h3 className="text-lg font-bold text-slate-900">Secure payments</h3>
+                    <p className="text-slate-600 text-sm sm:text-base mt-1 leading-relaxed">
                       Pay safely with multiple options and get instant booking confirmation.
                     </p>
                   </div>
@@ -280,35 +293,38 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="rounded-4xl border border-slate-200 bg-slate-50 p-8 shadow-sm">
-              <h3 className="text-2xl font-semibold text-slate-900 mb-6">Popular routes today</h3>
-              <div className="space-y-4">
+            {/* Popular Route Display Roster Card */}
+            <div className="lg:col-span-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4 sm:p-6 shadow-sm w-full">
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-5 tracking-tight">Popular routes today</h3>
+              <div className="space-y-4 w-full">
                 {popularRoutes.length > 0 ? (
                   popularRoutes.map((route) => (
                     <div
                       key={route.busId}
                       onClick={() => handleRouteClick(route.source, route.destination)}
-                      className="rounded-3xl bg-white p-5 border border-slate-200 cursor-pointer transition hover:shadow-md hover:bg-slate-50"
+                      className="rounded-2xl bg-white p-4 border border-slate-200/80 cursor-pointer transition-all hover:shadow-md hover:bg-slate-50/50 w-full"
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-lg font-semibold text-slate-900">{route.source} → {route.destination}</p>
-                          <p className="text-sm text-slate-500">{route.busName} • {route.bookings} bookings</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-base sm:text-lg font-bold text-slate-900 truncate">{route.source} → {route.destination}</p>
+                          <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">{route.busName} • {route.bookings} bookings</p>
                         </div>
-                        <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-600">₹{route.price}</span>
+                        <span className="rounded-xl bg-orange-100 px-3 py-1 text-sm font-bold text-orange-600 shrink-0">₹{route.price}</span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-3xl bg-white p-5 border border-slate-200 text-slate-500">
+                  <div className="rounded-2xl bg-white p-5 border border-slate-200 text-slate-400 text-sm font-semibold text-center animate-pulse">
                     Loading popular routes...
                   </div>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   );
 };

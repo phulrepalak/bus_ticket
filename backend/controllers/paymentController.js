@@ -14,7 +14,7 @@ export const checkout = async (req, res) => {
       currency: "INR",
     };
     const order = await instance.orders.create(options);
-    res.status(200).json(order); // Pura order object bhejo
+    res.status(200).json(order); 
   } catch (error) {
     res.status(500).json({ message: "Razorpay Error", error });
   }

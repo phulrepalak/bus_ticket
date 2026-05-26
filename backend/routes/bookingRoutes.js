@@ -5,21 +5,21 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Booking create karne ke liye
+// Booking create 
 router.post("/create", createBooking);
 
-// Booking track karne ke liye (PNR + Phone)
+// Booking track (PNR + Phone)
 router.post("/track", trackBooking);
 
 // --- NEW ROUTES FOR USER DASHBOARD ---
-// Logged-in user ke bookings fetch karne ke liye
+// Logged-in user fetch booking
 router.get("/my-bookings", authMiddleware, getMyBookings);
 
-// User ki overall travel activity stats fetch karne ke liye
+// fetch user activity stats for dashboard
 router.get("/activity-stats", authMiddleware, getActivityStats);
 
 // --- CANCELLATION ROUTE ---
-// Ticket cancel karne ke liye
+// Ticket cancellation by user (only if payment is completed and journey date is in future)
 router.put("/cancel/:id", authMiddleware, cancelBooking);
 
 export default router;

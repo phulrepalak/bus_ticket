@@ -17,7 +17,7 @@ export const sendOTP = async (req, res) => {
 
     let user = await User.findOne({ phone });
     if (!user) {
-      // Naya user create karte waqt default role 'user' ensure karein
+      // ensure that new user is created with role "user" and isProfileComplete as false by default
       user = new User({ 
         phone, 
         isProfileComplete: false, 
@@ -53,21 +53,19 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // OTP ko verify hone ke baad null karein
+    // after successful verification, OTP will be cleared from the database for security reasons
     user.otp = null; 
     await user.save();
 
-    // Fallback logic: Agar galti se role undefined ho toh "user" maanein
+    // Fallback logic: if role is somehow missing, default to "user" to prevent access issues. Admins should be created with the correct role from the start.
     const userRole = user.role || "user";
 
-    // JWT Token generate karein
     const token = jwt.sign(
       { id: user._id, role: userRole }, 
       process.env.JWT_SECRET, 
       { expiresIn: "7d" }
     );
 
-    // Response bhejte waqt console mein check karein (Debugging)
     console.log(`User Logged In: ${phone}, Role: ${userRole}`);
 
     res.status(200).json({
@@ -96,11 +94,11 @@ export const completeProfile = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-// 4. Update Profile (Existing user ke liye - Profile page se edit karne ke liye)
+// 4. Update Profile 
 export const updateProfile = async (req, res) => {
   const { fullName, email, gender } = req.body;
   try {
-    // Yahan hum isProfileComplete ko touch nahi karenge, sirf data update karenge
+    // get user by ID and update the profile fields, return the updated user without OTP field
     const user = await User.findByIdAndUpdate(
       req.user.id, 
       { fullName, email, gender },

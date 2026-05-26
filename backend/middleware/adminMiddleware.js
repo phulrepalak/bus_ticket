@@ -1,5 +1,5 @@
 export const isAdmin = (req, res, next) => {
-  // req.user humein authMiddleware se milta hai jo token ko decode karta hai
+  // req.user has been set by authMiddleware after verifying the JWT token
   if (req.user && req.user.role === "admin") {
     next(); // Permission granted
   } else {
