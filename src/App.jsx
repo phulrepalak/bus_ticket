@@ -2,8 +2,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 // Components
+import ScrollToTop from "./components/ScrollToTop"; 
 import Navbar from "./components/Navbar";
-import Footer from "./components/footer";
+import Footer from "./components/footer"; 
 
 // Pages
 import Home from "./pages/Home";
@@ -20,14 +21,20 @@ import Payment from "./pages/Payment";
 import TicketConfirmation from "./pages/TicketConfirmation";
 import TrackBooking from "./pages/TrackBooking";
 import MyBookings from "./pages/MyBookings";
+import HelpCenter from "./pages/HelpCenter";
+import FAQ from "./pages/FAQ";
+import ContactUs from "./pages/ContactUs";
+import TermsConditions from "./pages/TermsConditions";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminOccupancy from "./pages/AdminOccupancy";
 
+// Auto scroll on top integrated safely
 function App() {
   return (
     <Router>
+      <ScrollToTop /> 
       <Navbar />
 
       <Routes>
@@ -59,6 +66,14 @@ function App() {
         <Route path="/admin/occupancy" element={<AdminOccupancy />} />
 
 
+        
+        {/* Support System Pages */}
+        <Route path="/help" element={<HelpCenter />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/terms" element={<TermsConditions />} />
+    
+        {/* Wildcard Redirect */}
         <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>

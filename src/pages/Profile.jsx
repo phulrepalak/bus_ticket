@@ -68,127 +68,80 @@ const Profile = () => {
     }
   };
 
- if (loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="h-10 w-10 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex items-center justify-center p-6 font-sans">
-      
-      <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-12 items-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl max-w-5xl w-full overflow-hidden flex flex-col md:flex-row">
         
-        {/* LEFT SIDE: THE ROUNDED PROFILE COMPONENT */}
-        <div className="lg:col-span-5 flex justify-center">
-          <div className="w-[380px] h-[380px] rounded-full bg-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col items-center justify-center p-10 text-center relative overflow-hidden">
-            {/* Subtle background decoration for the circle */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-50 rounded-full opacity-50"></div>
-            
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="h-24 w-24 bg-gradient-to-br from-blue-500 to-blue-800 rounded-[2rem] flex items-center justify-center text-4xl font-black text-white mb-6 shadow-xl shadow-indigo-200">
-                {user.fullName ? user.fullName[0].toUpperCase() : "U"}
-              </div>
-              
-              <h2 className="text-3xl font-black text-slate-1000 mb-1 tracking-tight">
-                {user.fullName || "User"}
-              </h2>
-              <p className="text-slate-600 text-sm mb-8 font-medium">{user.email}</p>
-              
-              <div className="w-full space-y-3 px-6">
-                <button className="w-full flex items-center justify-center gap-3 py-3 bg-indigo-50 text-indigo-600 rounded-2xl font-bold text-sm transition-all hover:bg-indigo-100">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                  Personal Details
-                </button>
-                <button onClick={() => navigate("/")} className="w-full flex items-center justify-center gap-3 py-3 text-slate-400 rounded-2xl font-bold text-sm transition-all hover:text-slate-600 hover:bg-slate-50">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-                  Back to Portal
-                </button>
-              </div>
-            </div>
+        {/* Left Side: Theme Image */}
+        <div className="md:w-1/2 bg-white p-8 md:p-12 flex flex-col justify-center border-r border-gray-100">
+          <h2 className="text-4xl font-extrabold text-slate-800 mb-4 leading-tight">
+            Your Journey <br /> 
+            <span className="text-blue-600">with GoBus</span>
+          </h2>
+          <p className="text-gray-500 text-lg mb-8">
+            Keep your profile details updated to enjoy a personalized travel experience.
+          </p>
+          <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+            <img 
+              src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=1000" 
+              alt="GoBus Travel" 
+              className="w-full h-64 object-cover"
+            />
           </div>
         </div>
 
-        {/* RIGHT SIDE: EDITABLE CONTENT AREA */}
-        <div className="lg:col-span-7 bg-white rounded-[3rem] p-10 md:p-14 shadow-[0_10px_40px_rgba(0,0,0,0.02)] border border-slate-50">
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h1 className="text-4xl font-black tracking-tight text-slate-800">Settings</h1>
-              <p className="text-slate-400 font-medium mt-1">Manage your account identity</p>
+        {/* Right Side: Profile Details */}
+        <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-slate-50/50">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-slate-800 tracking-tight">Account Details</h3>
+            <div className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+              {isEditing ? "Editing Mode" : "Verified Account"}
             </div>
-            {isEditing && (
-              <div className="bg-amber-50 text-amber-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100 animate-pulse">
-                Editing Mode
-              </div>
-            )}
           </div>
 
-          <div className="space-y-10">
-            {/* FULL NAME */}
-            <div className="group transition-all">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block px-1">Full Name</label>
-              {isEditing ? (
-                <input 
-                  type="text" 
-                  name="fullName" 
-                  value={user.fullName} 
-                  onChange={handleChange} 
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-slate-900 font-bold outline-none transition-all"
-                />
-              ) : (
-                <p className="text-xl font-bold text-slate-800 px-1">{user.fullName || "Not Specified"}</p>
-              )}
-            </div>
-
-            {/* EMAIL */}
-            <div className="group transition-all">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block px-1">Email Address</label>
-              {isEditing ? (
-                <input 
-                  type="email" 
-                  name="email" 
-                  value={user.email} 
-                  onChange={handleChange} 
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl px-6 py-4 text-slate-900 font-bold outline-none transition-all"
-                />
-              ) : (
-                <p className="text-xl font-bold text-slate-800 px-1">{user.email}</p>
-              )}
-            </div>
-
-            {/* GENDER */}
+          <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 block px-1">Gender Identity</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
+              {isEditing ? (
+                <input type="text" name="fullName" value={user.fullName} onChange={handleChange} className="w-full p-4 bg-white border-2 border-blue-400 rounded-xl text-slate-700 font-semibold focus:outline-none" />
+              ) : (
+                <div className="w-full p-4 bg-white border border-gray-200 rounded-xl text-slate-700 font-semibold shadow-sm">{user.fullName || "Not Provided"}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+              {isEditing ? (
+                <input type="email" name="email" value={user.email} onChange={handleChange} className="w-full p-4 bg-white border-2 border-blue-400 rounded-xl text-slate-700 font-semibold focus:outline-none" />
+              ) : (
+                <div className="w-full p-4 bg-white border border-gray-200 rounded-xl text-slate-700 font-semibold shadow-sm">{user.email || "Not Linked"}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Gender</label>
               <div className="flex gap-3">
                 {["Male", "Female", "Other"].map((g) => (
-                  <button 
-                    key={g} 
-                    type="button" 
-                    disabled={!isEditing} 
-                    onClick={() => setUser({ ...user, gender: g })}
-                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all
-                      ${user.gender === g 
-                        ? 'bg-slate-900 text-white shadow-lg shadow-slate-200' 
-                        : 'bg-slate-50 text-slate-400 border border-transparent ' + (isEditing ? 'hover:bg-slate-100 hover:text-slate-600' : 'opacity-50')}`}
+                  <button key={g} type="button" disabled={!isEditing} onClick={() => setUser({ ...user, gender: g })}
+                    className={`flex-1 py-3 px-4 rounded-xl border text-center font-bold text-sm transition-all 
+                      ${user.gender === g ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-400 border-gray-200 ' + (!isEditing ? 'opacity-60' : 'hover:border-blue-400')}`}
                   > {g} </button>
                 ))}
               </div>
             </div>
 
-            {/* BUTTONS */}
-            <div className="pt-6 flex gap-4">
-              <button 
-                onClick={handleUpdate} 
-                className={`flex-[2] py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all transform active:scale-95 shadow-xl
-                ${isEditing 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100' 
-                  : 'bg-slate-900 hover:bg-black text-white shadow-slate-200'}`}
-              >
-                {isEditing ? "Save Configuration" : "Edit Profile Info"}
+            <div className="pt-4 space-y-3">
+              <button onClick={handleUpdate} className={`w-full font-bold py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 ${isEditing ? 'bg-green-600 hover:bg-green-700 shadow-green-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'} text-white`}>
+                {isEditing ? "Save Profile Changes" : "Update Profile Info"}
               </button>
-              
               {isEditing && (
                 <button onClick={handleCancel} className="w-full text-gray-500 text-xs font-bold hover:text-red-500 transition-colors uppercase tracking-widest">Cancel Editing</button>
               )}
@@ -198,7 +151,6 @@ const Profile = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
