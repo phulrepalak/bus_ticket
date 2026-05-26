@@ -15,14 +15,15 @@ import CompleteProfile from "./pages/CompleteProfile";
 import ManageBus from "./pages/ManageBus";
 import SelectSeat from "./pages/SelectSeat";
 import Profile from "./pages/Profile";
-import Checkout from "./pages/Checkout"; 
-import Payment from "./pages/Payment"; 
-import TicketConfirmation from "./pages/TicketConfirmation"; 
+import Checkout from "./pages/Checkout";
+import Payment from "./pages/Payment";
+import TicketConfirmation from "./pages/TicketConfirmation";
 import TrackBooking from "./pages/TrackBooking";
 import MyBookings from "./pages/MyBookings";
 
 // Admin Pages
-import AdminDashboard from "./pages/AdminDashboard"; 
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminOccupancy from "./pages/AdminOccupancy";
 
 function App() {
   return (
@@ -38,27 +39,28 @@ function App() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/account-created" element={<AccountCreated />} />
         <Route path="/track-booking" element={<TrackBooking />} />
-        
+
         {/* Profile & Dashboard Routes */}
-        <Route path="/profile" element={<Profile />} />  
-        <Route path="/complete-profile" element={<CompleteProfile />} />      
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route path="/my-bookings" element={<MyBookings />} />
 
         {/* --- BOOKING FLOW ROUTES --- */}
         <Route path="/select-seat/:busId" element={<SelectSeat />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment" element={<Payment />} />
-        
+
         {/* Payment ke baad isi page par user redirect hoga */}
         <Route path="/ticket-confirmation" element={<TicketConfirmation />} />
 
         {/* --- ADMIN ONLY ROUTES --- */}
-        <Route path="/admin" element={<AdminDashboard />} /> 
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manage-bus" element={<ManageBus />} />
-        
-    
+        <Route path="/admin/occupancy" element={<AdminOccupancy />} />
+
+
         <Route path="*" element={<Navigate to="/" />} />
-       
+
       </Routes>
       <Footer />
     </Router>
